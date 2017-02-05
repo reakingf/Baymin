@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="5dp">
+    <LinearLayout android:id="@+id/left_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="70dp"
+        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <com.qa_group.baymin.view.RoundImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:src="@drawable/logo"/>
+        </LinearLayout>
+        <TextView android:id="@+id/left_msg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:textSize="16sp"
+            android:background="@drawable/list_item_receiver_message"
+            android:textIsSelectable="true"/>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/right_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right">
+        <TextView android:id="@+id/right_msg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:textIsSelectable="true"
+            android:layout_marginRight="10dp"
+            android:layout_marginStart="110dp"
+            android:background="@drawable/list_item_send_message"
+            android:textSize="16dp"
+            android:textColor="@color/sendTextColor"/>
+        <com.qa_group.baymin.view.RoundImageView
+            android:id="@+id/right_face_img"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/default_user_image"/>
+    </LinearLayout>
+</LinearLayout>

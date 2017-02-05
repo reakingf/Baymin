@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="main_color">#2196F3</color>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="white">#ffffff</color>
+    <color name="light_white">#fffafa</color>
+    <color name="light_blue_1">#1C86EE</color>
+    <color name="light_blue_2">#1874CD</color>
+    <color name="black">#000000</color>
+    <color name="titleBackground">#303030</color>
+    <color name="gray">#cccccc</color>
+    <color name="input_msg_bg">#106184</color>
+    <color name="sendTextColor">#1b1c1c</color>
+    <color name="bt_text_color">#14181a</color>
+    <color name="green">#00CC00</color>
+    <color name="lightGreen">#51CA65</color>
+    <color name="submit_bt_color">#C8C8C8</color>
+    <color name="primary">#2196F3</color>
+    <color name="primary_dark">#448AFF</color>
+    <color name="primary_darker">#1976D2</color>
+    <color name="red">#FF0033</color>
+    <color name="light_blue_0">#FF03A9F4</color>
+    <color name="toast_bg">#dddfe0</color>
+    <color name="test">#FF0288D1</color>
+</resources>

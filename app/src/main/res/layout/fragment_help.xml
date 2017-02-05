@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:lineSpacingExtra="3dp"
+        android:textSize="@dimen/button_text_size"
+        android:text="@string/thanksAndTips"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="10dp"
+        android:textSize="@dimen/button_text_size"
+        android:text="@string/question"/>
+    <EditText
+        android:id="@+id/edit_question"
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:gravity="top"
+        android:paddingTop="5dp"
+        android:textSize="@dimen/button_text_size"
+        android:background="@drawable/bg_edit_text"
+        android:singleLine="false"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="10dp"
+        android:textSize="@dimen/button_text_size"
+        android:text="@string/answer"/>
+    <EditText
+        android:id="@+id/edit_answer"
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:layout_margin="5dp"
+        android:gravity="top"
+        android:paddingTop="5dp"
+        android:textSize="@dimen/button_text_size"
+        android:background="@drawable/bg_edit_text" />
+
+    <Button
+        android:id="@+id/submit"
+        android:layout_width="120dp"
+        android:layout_height="40dp"
+        android:layout_margin="10dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/bg_dialog_bt_selected"
+        android:text="@string/submit"
+        android:textColor="@color/white"
+        android:textSize="@dimen/button_text_size"/>
+
+</LinearLayout>
