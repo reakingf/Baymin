@@ -10,7 +10,9 @@
     <color name="light_blue_2">#1874CD</color>
     <color name="black">#000000</color>
     <color name="titleBackground">#303030</color>
+    <color name="light_gray">#f0f0f0</color>
     <color name="gray">#cccccc</color>
+    <color name="deep_gray">#999999</color>
     <color name="input_msg_bg">#106184</color>
     <color name="sendTextColor">#1b1c1c</color>
     <color name="bt_text_color">#14181a</color>

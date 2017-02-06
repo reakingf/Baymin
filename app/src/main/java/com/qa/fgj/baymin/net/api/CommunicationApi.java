@@ -8,10 +8,10 @@ import rx.Observable;
  * Created by FangGengjia on 2017/1/25.
  */
 
-public Interface CommunicationApi{
+public interface CommunicationApi{
 
     @GET("")
-    Observable<S> getRespone(
+    Observable<T> getRespone(
             @Query("q") String question
     );
 

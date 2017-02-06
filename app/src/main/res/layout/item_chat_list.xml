@@ -1,49 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/light_gray"
     android:padding="5dp">
-    <LinearLayout android:id="@+id/left_layout"
+
+    <!--昨天 晚上 10:24; 周五 20:20； 1月19日 22:30-->
+    <TextView
+        android:id="@+id/chat_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:padding="5dp"
+        android:background="@drawable/bg_chat_time"
+        android:textColor="@color/white"
+        android:textSize="10sp"
+        tools:text="下午 14:15" />
+
+    <LinearLayout
+        android:id="@+id/msg_received_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="70dp"
-        android:orientation="horizontal">
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-            <com.qa_group.baymin.view.RoundImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center"
-                android:src="@drawable/logo"/>
-        </LinearLayout>
-        <TextView android:id="@+id/left_msg"
+        android:orientation="horizontal"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="70dp">
+
+        <com.qa.fgj.baymin.widget.RoundImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:src="@drawable/logo"/>
+
+        <TextView android:id="@+id/recevied_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:textSize="16sp"
             android:background="@drawable/list_item_receiver_message"
             android:textIsSelectable="true"/>
+
     </LinearLayout>
-    <LinearLayout android:id="@+id/right_layout"
+
+    <LinearLayout
+        android:id="@+id/msg_send_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="right">
-        <TextView android:id="@+id/right_msg"
+        android:layout_marginStart="70dp"
+        android:gravity="end">
+
+        <!--消息发送状态，圆形进度条/重发-->
+        <ImageButton
+            android:id="@+id/msg_state"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/send_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:textIsSelectable="true"
-            android:layout_marginRight="10dp"
-            android:layout_marginStart="110dp"
+            android:layout_marginEnd="10dp"
             android:background="@drawable/list_item_send_message"
-            android:textSize="16dp"
+            android:textSize="16sp"
             android:textColor="@color/sendTextColor"/>
-        <com.qa_group.baymin.view.RoundImageView
-            android:id="@+id/right_face_img"
+
+        <com.qa.fgj.baymin.widget.RoundImageView
+            android:id="@+id/user_face_img"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@drawable/default_user_image"/>
+
     </LinearLayout>
+
 </LinearLayout>

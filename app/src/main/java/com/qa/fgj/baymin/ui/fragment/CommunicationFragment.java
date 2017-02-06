@@ -14,7 +14,7 @@ import android.widget.RelativeLayout;
 import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.base.IBaseView;
-import com.qa.fgj.baymin.moduel.entity.MsgItem;
+import com.qa.fgj.baymin.moduel.entity.MessageBean;
 import com.qa.fgj.baymin.presenter.CommunicationPresenter;
 import com.qa.fgj.baymin.ui.adapter.MsgAdapter;
 import com.qa.fgj.baymin.widget.XListView;
@@ -45,7 +45,7 @@ public class CommunicationFragment extends Fragment implements IBaseView{
     @BindView(R.id.sendButton)
     Button sendButton;
 
-    private List<MsgItem> dataList;
+    private List<MessageBean> dataList;
     private MsgAdapter adapter;
 
     private IBasePresenter presenter;
@@ -60,9 +60,18 @@ public class CommunicationFragment extends Fragment implements IBaseView{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_communication, container, false);
-
+        initView();
+        initListView();
         presenter.attachView(this);
         return view;
+    }
+
+    private void initListView() {
+
+    }
+
+    private void initView() {
+
     }
 
     private void initMessage(){
