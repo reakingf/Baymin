@@ -1,6 +1,7 @@
 package com.qa.fgj.baymin.util;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
@@ -8,6 +9,7 @@ import android.widget.Toast;
 
 import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.app.App;
+import com.qa.fgj.baymin.app.Constant;
 
 /**
  * Created by FangGengjia on 2017/2/4
@@ -46,6 +48,9 @@ public class ToastUtil {
     }
 
     public Toast create() {
+        if (context == null){
+            context = Constant.appContext;
+        }
         View contentView = View.inflate(context, R.layout.dialog_toast, null);
         TextView tv = (TextView) contentView.findViewById(R.id.tv_toast_msg);
         toast = new Toast(context);

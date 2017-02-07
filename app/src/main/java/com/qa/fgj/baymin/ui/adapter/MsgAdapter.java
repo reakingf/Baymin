@@ -11,7 +11,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.qa.fgj.baymin.R;
-import com.qa.fgj.baymin.moduel.entity.MessageBean;
+import com.qa.fgj.baymin.model.entity.MessageBean;
+import com.qa.fgj.baymin.util.ToastUtil;
 
 import java.util.List;
 
@@ -64,22 +65,27 @@ public class MsgAdapter extends ArrayAdapter<MessageBean>
     @Override
     public void onClick(View view) {
         switch (view.getId()){
-            case R.id.recevied_text:
-                //TODO PopupWindow：复制、删除、查看更多等
-                break;
             case R.id.msg_state:
                 //TODO 重发
+                ToastUtil.show("重发");
                 break;
             case R.id.user_face_img:
                 //TODO 进入用户信息页
+                ToastUtil.show("点击用户头像");
                 break;
         }
     }
 
     @Override
     public boolean onLongClick(View view) {
-        if (view.getId() == R.id.send_text){
-            //TODO PopupWindow：复制、删除等
+        //TODO PopupWindow：复制、删除、查看更多等
+        switch (view.getId()){
+            case R.id.recevied_text:
+                ToastUtil.show("长按接收文本");
+                break;
+            case R.id.send_text:
+                ToastUtil.show("长按发送文本");
+            break;
         }
         return false;
     }

@@ -11,6 +11,7 @@ import android.view.WindowManager;
 
 import com.orhanobut.logger.Logger;
 import com.qa.fgj.baymin.di.component.AppComponent;
+import com.qa.fgj.baymin.di.component.DaggerAppComponent;
 import com.qa.fgj.baymin.di.module.AppModule;
 import com.qa.fgj.baymin.util.SystemUtil;
 import com.squareup.leakcanary.LeakCanary;
@@ -33,7 +34,14 @@ public class App extends Application {
     public static float DIMEN_RATE = -1.0F;
     public static int DIMEN_DPI = -1;
 
+    public App() {
+        instance = this;
+    }
+
     public static synchronized App getInstance(){
+        if (instance == null){
+            new App();
+        }
         return instance;
     }
 
@@ -45,7 +53,7 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        instance = this;
+//        instance = this;
         Constant.appContext = getApplicationContext();
 
         //获取屏幕宽高

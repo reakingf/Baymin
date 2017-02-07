@@ -15,19 +15,45 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.qa.fgj.baymin.R;
+import com.qa.fgj.baymin.base.BaseActivity;
 import com.qa.fgj.baymin.ui.fragment.CommunicationFragment;
+import com.qa.fgj.baymin.ui.fragment.IntroductionFragment;
 
-public class MainActivity extends AppCompatActivity
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    @BindView(R.id.drawer_layout)
+    DrawerLayout drawer;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+//    @BindView(R.id.fab)
+//    FloatingActionButton fab;
+    @BindView(R.id.nav_view)
+    NavigationView navigationView;
+
+    CommunicationFragment mCommunicationFragment;
+    IntroductionFragment mIntroductionFragment;
+    //...
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        ButterKnife.bind(this);
+        initView();
+        if (savedInstanceState == null){
+            replaceFragment(R.id.fragment_container, CommunicationFragment.newInstance(), CommunicationFragment.TAG);
+        } else {
+            //TODO 从缓存中获取fragment
+        }
+    }
+
+    private void initView() {
         setSupportActionBar(toolbar);
 
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 //        fab.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
@@ -36,15 +62,14 @@ public class MainActivity extends AppCompatActivity
 //            }
 //        });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
+
 
     @Override
     public void onBackPressed() {
@@ -85,16 +110,15 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
+
             // Handle the camera action
         } else if (id == R.id.nav_gallery) {
-            if (null == getFragmentManager().findFragmentByTag(CommunicationFragment.TAG)){
-                getFragmentManager().beginTransaction().replace(R.id.fragment_container, new CommunicationFragment(),
-                        CommunicationFragment.TAG).commit();
-            }
+
         } else if (id == R.id.nav_slideshow) {
             if (null == getFragmentManager().findFragmentByTag(CommunicationFragment.TAG)){
-                getFragmentManager().beginTransaction().replace(R.id.fragment_container, new CommunicationFragment(),
-                        CommunicationFragment.TAG).commit();
+                replaceFragment(R.id.fragment_container, CommunicationFragment.newInstance(),
+                        CommunicationFragment.TAG);
+                setTitle(R.string.app_name);
             }
         } else if (id == R.id.nav_manage) {
 
@@ -107,5 +131,15 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void showError(String msg) {
+
+    }
+
+    @Override
+    public void useNightMode(boolean isNight) {
+
     }
 }

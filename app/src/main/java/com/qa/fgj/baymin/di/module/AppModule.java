@@ -2,7 +2,10 @@ package com.qa.fgj.baymin.di.module;
 
 import com.qa.fgj.baymin.app.App;
 
+import javax.inject.Singleton;
+
 import dagger.Module;
+import dagger.Provides;
 
 /**
  * Created by FangGengjia on 2017/1/19.
@@ -17,5 +20,15 @@ public class AppModule {
         this.application = application;
     }
 
+    @Provides
+    @Singleton
+    App provideApplicationContext(){
+        return application;
+    }
 
+//    @Provides
+//    @Singleton
+//    RetrofitHlper provideRetrofitHelper(){
+//        return new RetrofitHlper();
+//    }
 }

@@ -1,5 +1,7 @@
 package com.qa.fgj.baymin.net.api;
 
+import com.qa.fgj.baymin.model.entity.MessageBean;
+
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 import rx.Observable;
@@ -11,7 +13,7 @@ import rx.Observable;
 public interface CommunicationApi{
 
     @GET("")
-    Observable<T> getRespone(
+    Observable<MessageBean> getRespone(
             @Query("q") String question
     );
 

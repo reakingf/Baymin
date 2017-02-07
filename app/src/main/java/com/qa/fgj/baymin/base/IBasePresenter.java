@@ -1,7 +1,5 @@
 package com.qa.fgj.baymin.base;
 
-import java.lang.ref.WeakReference;
-
 /**
  * Created by FangGengjia on 2017/1/19.
  */

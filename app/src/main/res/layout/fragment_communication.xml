@@ -14,21 +14,21 @@
         android:cacheColorHint="#00000000"
         android:transcriptMode="alwaysScroll" />
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/msgButtonBar"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:orientation="horizontal"
         android:paddingTop="6dp"
         android:paddingBottom="6dp"
         android:background="@drawable/input_bar">
 
         <ImageButton
             android:id="@+id/inputType"
-            android:layout_width="45dp"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
+            android:layout_weight="1"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:src="@drawable/edit"
@@ -36,41 +36,20 @@
 
         <Button
             android:id="@+id/voiceButton"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_toEndOf="@id/inputType"
-            android:layout_alignTop="@id/inputType"
-            android:layout_alignBottom="@id/inputType"
+            android:layout_weight="7"
             android:layout_marginEnd="5dp"
             android:background="@drawable/bg_button"
             android:textSize="18sp"
             android:textColor="@color/black"
             android:text="@string/speak"/>
 
-        <Button
-            android:id="@+id/sendButton"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_alignTop="@id/inputType"
-            android:layout_alignBottom="@id/inputType"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:background="@drawable/bg_button"
-            android:text="@string/send"
-            android:textSize="17sp"
-            android:visibility="gone" />
-
         <EditText
             android:id="@+id/textInput"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@id/sendButton"
-            android:layout_toEndOf="@id/inputType"
-            android:layout_alignTop="@id/inputType"
-            android:layout_alignBottom="@id/inputType"
+            android:layout_weight="6"
             android:paddingStart="5dp"
             android:paddingEnd="5dp"
             android:background="@drawable/bg_edit_text"
@@ -78,7 +57,19 @@
             android:textSize="18sp"
             android:visibility="gone"/>
 
-    </RelativeLayout>
+        <Button
+            android:id="@+id/sendButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:background="@drawable/bg_button"
+            android:text="@string/send"
+            android:textSize="17sp"
+            android:visibility="gone"/>
+
+    </LinearLayout>
 
 </LinearLayout>
 
