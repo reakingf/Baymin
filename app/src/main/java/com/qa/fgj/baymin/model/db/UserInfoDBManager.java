@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 
 import com.qa.fgj.baymin.model.entity.UserBean;
+import com.qa.fgj.baymin.util.LogUtil;
 
 /**
  * 用户信息数据表操作类
@@ -59,7 +60,7 @@ public class UserInfoDBManager extends DBManagerBase {
             values.put(UserBean.Table.FIELD_PASSWORD, user.getPassword());
             values.put(UserBean.Table.FIELD_IMG_URL, user.getImagePath());
             long id = mDataBase.insert(UserBean.Table.TABLE_NAME, null, values);
-//            LogUtil.d(Global.appContext, "-------save: id = "+id);
+            LogUtil.d("-------save: id = "+id);
         }
     }
 
@@ -141,7 +142,7 @@ public class UserInfoDBManager extends DBManagerBase {
             ContentValues values = createContentValues(user);
             int affectedRow = mDataBase.update(UserBean.Table.TABLE_NAME, values, UserBean.Table.FIELD_ID + " =? ",
                     new String[]{String.valueOf(user.getId().intValue())});
-//            LogUtil.d(Global.appContext, "-------update: affected row = "+affectedRow);
+            LogUtil.d("-------update: affected row = "+affectedRow);
             mDataBase.setTransactionSuccessful();
             mDataBase.endTransaction();
         }

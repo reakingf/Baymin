@@ -1,37 +1,62 @@
 package com.qa.fgj.baymin.presenter;
 
-import com.qa.fgj.baymin.base.IBaseModule;
 import com.qa.fgj.baymin.base.IBasePresenter;
-import com.qa.fgj.baymin.base.IBaseView;
+import com.qa.fgj.baymin.model.CommunicationModel;
 import com.qa.fgj.baymin.model.entity.MessageBean;
+import com.qa.fgj.baymin.ui.activity.ICommunicationView;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import rx.Observable;
+import rx.Scheduler;
+import rx.Subscriber;
+import rx.functions.Action1;
 
 /**
  * Created by FangGengjia on 2017/1/29
  */
 
-public class CommunicationPresenter implements IBasePresenter {
+public class CommunicationPresenter<T extends ICommunicationView> implements IBasePresenter<T> {
 
-    private IBaseView view;
-    private IBaseModule module;
+    private T mView;
+    private CommunicationModel mModel;
+    private Scheduler executor;
+    private Scheduler notifier;
+
+    public CommunicationPresenter(Scheduler executor, Scheduler notifier) {
+        this.executor = executor;
+        this.notifier = notifier;
+    }
 
     @Override
-    public void attachView(IBaseView view) {
-        this.view = view;
+    public void attachView(T view) {
+        mView = view;
     }
 
-    public List<MessageBean> loadDataFromDB(){
-        List<MessageBean> list = new ArrayList<>();
-        MessageBean messageBean = new MessageBean("你好，我叫小白", false, 100031);
-        MessageBean messageBean1 = new MessageBean("你好，小白，很高兴认识你", true, 1111020);
-        list.add(messageBean);
-        list.add(messageBean1);
-        return list;
+    public void fetch(String id, int offset){
+        mModel.loadData(id, offset)
+                .observeOn(executor)
+        .subscribeOn(notifier)
+        .subscribe(new Action1<List<MessageBean>>() {
+            @Override
+            public void call(List<MessageBean> messageBeen) {
+                mView.initListViewData(messageBeen);
+            }
+        });
     }
 
+    public void getAnswer(String question, Subscriber subscriber){
+        mModel.getAnswer(question)
+        .observeOn(executor)
+        .subscribeOn(notifier)
+        .subscribe(subscriber);
+    }
 
+    //todo 发送成功才保存？
+    public Observable<Boolean> save(MessageBean msg, Subscriber subscriber){
+        mModel.saveData(msg);
+        return Observable.just(true);
+    }
 
     @Override
     public void detachView() {

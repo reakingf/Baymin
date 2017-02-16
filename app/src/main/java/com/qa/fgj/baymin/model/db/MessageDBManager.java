@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 
 import com.qa.fgj.baymin.model.entity.MessageBean;
+import com.qa.fgj.baymin.util.LogUtil;
 
 import java.util.ArrayList;
 
@@ -58,7 +59,7 @@ public class MessageDBManager extends DBManagerBase {
             openWriteDB();
             ContentValues values = createContentValues(messageBean);
             long id = mDataBase.insert(MessageBean.Table.TABLE_NAME, null, values);
-//            LogUtil.d(Global.appContext, "-------insert id = "+id);
+            LogUtil.d("-------insert id = "+id);
         }
     }
 
@@ -73,7 +74,7 @@ public class MessageDBManager extends DBManagerBase {
     }
 
     /** 根据id字段获取指定大小(20个)的聊天记录（时间降序） */
-    public ArrayList<MessageBean> queryByMsgToIdDESC(String msgId, int offset) {
+    public ArrayList<MessageBean> queryByMsgIdDESC(String msgId, int offset) {
         synchronized (LOCK) {
             openWriteDB();
             String order1 = MessageBean.Table.FIELD_CREATE_TINE + " DESC, ";
@@ -96,7 +97,7 @@ public class MessageDBManager extends DBManagerBase {
                     }
                 }
             } catch (Exception e) {
-//                LogUtil.e(context, "query:查询失败：" + where + "," + e.getMessage());
+                LogUtil.e("MessageDBManager", "query:查询失败：" + where + "," + e.getMessage());
             }
             finally {
                 if (cur != null) {

@@ -105,7 +105,14 @@ public class MsgAdapter extends ArrayAdapter<MessageBean>
         if (messageBean.isSendMsg){
             viewHolder.receivedContainer.setVisibility(View.GONE);
             viewHolder.sendContainer.setVisibility(View.VISIBLE);
-            //TODO 发送失败或发送较耗时，显示重发按钮或圆形进度条
+            //默认显示发送中，发送成功隐藏该控件，发送失败将原先的圆形进度条动画改为重发图片
+            if (messageBean.isSendSuccessful){
+                viewHolder.sendState.setVisibility(View.GONE);
+            } else if (!messageBean.isSending){
+                viewHolder.sendState.setVisibility(View.VISIBLE);
+                //todo 重发按钮和圆形进度条图片待补充
+                viewHolder.sendState.setImageResource(R.drawable.ic_menu_send);
+            }
             viewHolder.sendText.setText(messageBean.getContent());
         } else {
             viewHolder.sendContainer.setVisibility(View.GONE);

@@ -15,15 +15,14 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * Created by FangGengjia on 2017/1/24.
  */
 
-public class BayMinHttpClient {
+public class BayMinHttpClientRx {
 
     private final Retrofit retrofit;
     private final static String BASE_URL = "";
 
-    public BayMinHttpClient(final long connTimeout, final long readTimeout, final long writeTimeout){
+    public BayMinHttpClientRx(final long connTimeout, final long readTimeout, final long writeTimeout){
 
         OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
-//        httpClientBuilder.addInterceptor(new YcfOkHttpInterceptor());
         if(connTimeout > 0) {
             httpClientBuilder.connectTimeout(connTimeout, TimeUnit.MILLISECONDS);
         }
@@ -35,20 +34,17 @@ public class BayMinHttpClient {
         }
 
         Retrofit.Builder retrofitBuilder = new Retrofit.Builder()
-                .baseUrl(BASE_URL)//RETROFIT2规定一定要指定一个基地址
+                .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create(new Gson()))
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create());
 
         retrofit = retrofitBuilder.client(httpClientBuilder.build()).build();
     }
 
-    public BayMinHttpClient() {
+    public BayMinHttpClientRx() {
         this(-1, -1, -1);
     }
 
-    /**
-     * 创建一个API实例
-     */
     public <S> S createApi(Class<S> apiClass){
         return retrofit.create(apiClass);
     }

@@ -8,7 +8,12 @@ public class MessageBean {
 
     private Integer id;
     private String content;
-    public boolean isSendMsg;
+    /* 是否是用户发出的消息，false则为服务器发回的消息 */
+    public boolean isSendMsg = true;
+    /* 是否在发送中 */
+    public boolean isSending = true;
+    /* 是否发送成功 */
+    public boolean isSendSuccessful = false;
     public static final boolean TYPE_SEND = true;
     public static final boolean TYPE_RECEIVED = false;
     /** 是否显示时间，与上一条消息相隔10分钟以内的不显示消息时间，首次加载聊天界面时最近的一条显示时间 */
@@ -81,7 +86,6 @@ public class MessageBean {
                     .append(FIELD_IS_SEND_MSG + " text)");
             return sb.toString();
         }
-
     }
 
 }

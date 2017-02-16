@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,10 +17,12 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import com.qa.fgj.baymin.R;
-import com.qa.fgj.baymin.base.IBaseView;
 import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.presenter.CommunicationPresenter;
+import com.qa.fgj.baymin.ui.activity.ICommunicationView;
 import com.qa.fgj.baymin.ui.adapter.MsgAdapter;
+import com.qa.fgj.baymin.util.Global;
+import com.qa.fgj.baymin.util.ToastUtil;
 import com.qa.fgj.baymin.widget.XListView;
 
 import java.util.ArrayList;
@@ -27,6 +30,12 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import rx.Scheduler;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 /**
  * 聊天界面
@@ -34,7 +43,7 @@ import butterknife.ButterKnife;
  */
 
 public class CommunicationFragment extends Fragment implements
-        IBaseView, View.OnClickListener, XListView.IXListViewListener{
+        ICommunicationView, View.OnClickListener, XListView.IXListViewListener{
 
     public static final String TAG = CommunicationFragment.class.getSimpleName();
 
@@ -51,10 +60,14 @@ public class CommunicationFragment extends Fragment implements
     @BindView(R.id.sendButton)
     Button sendButton;
 
-    private List<MessageBean> dataList;
+    private List<MessageBean> listData;
     private MsgAdapter adapter;
+    /* 初始消息id */
+    private String msgID = "0";
 
     private CommunicationPresenter presenter;
+    private final Scheduler executor = Schedulers.io();
+    private final Scheduler notifier = AndroidSchedulers.mainThread();
     private InputMethodManager inputMethodManager;
 
     private TextWatcher mTextWatcher = new TextWatcher() {
@@ -84,7 +97,7 @@ public class CommunicationFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        presenter = new CommunicationPresenter();
+        presenter = new CommunicationPresenter(executor, notifier);
     }
 
     @Nullable
@@ -96,16 +109,16 @@ public class CommunicationFragment extends Fragment implements
         initView();
         inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         presenter.attachView(this);
+        presenter.fetch(msgID, listData.size());
         return view;
     }
 
     private void initListView() {
         listView.setPullLoadEnable(false);
-        dataList = new ArrayList<>();
-        adapter = new MsgAdapter(getActivity(), R.layout.item_chat_list, dataList);
+        listData = new ArrayList<>();
+        adapter = new MsgAdapter(getActivity(), R.layout.item_chat_list, listData);
         listView.setAdapter(adapter);
         listView.setXListViewListener(this);
-        loadMsg();
     }
 
     private void initView() {
@@ -115,12 +128,29 @@ public class CommunicationFragment extends Fragment implements
         sendButton.setOnClickListener(this);
     }
 
-    private void loadMsg(){
-        dataList.clear();
-        dataList.addAll(presenter.loadDataFromDB());
+    @Override
+    public void initListViewData(List<MessageBean> messageList){
+        listData.clear();
+        if (Global.isLogin){
+            if (messageList != null && messageList.size() > 0){
+                for (MessageBean bean : messageList) {
+//                setHandleMsgBean(item, 0);
+                    listData.add(0, bean);
+                }
+            } else {
+                MessageBean messageBean =new MessageBean(getString(R.string.welcome_tip), false,
+                        System.currentTimeMillis());
+                listData.add(messageBean);
+                presenter.save(messageBean);
+            }
+        } else{
+            listView.setPullRefreshEnable(false);
+            MessageBean messageBean =new MessageBean(getString(R.string.welcome_tip), false,
+                    System.currentTimeMillis());
+            listData.add(messageBean);
+        }
         adapter.notifyDataSetChanged();
     }
-
 
     @Override
     public void onClick(View view) {
@@ -132,13 +162,13 @@ public class CommunicationFragment extends Fragment implements
                 startSpeechReconDialog();
                 break;
             case R.id.sendButton:
-                sendQuestion();
+                handleQuestion();
                 break;
         }
     }
 
     /**
-     * 更改底部输入面板视图
+     * 更改底部输入面板视图类型
      */
     private void changeInputType() {
         if (voiceButton.isShown()) {
@@ -156,9 +186,41 @@ public class CommunicationFragment extends Fragment implements
         }
     }
 
-    private void sendQuestion() {
+    @SuppressWarnings("unchecked")
+    private void handleQuestion() {
         sendButton.setBackgroundResource(R.drawable.bg_button);
+        String question = editText.getText().toString().trim();
+        if (TextUtils.isEmpty(question)){
+            ToastUtil.shortShow(getString(R.string.null_tips));
+        } else if (getString(R.string.close_asr).equals(question)) {
+            //todo 关闭语音连续识别
+        } else {
+            final MessageBean sendMsg = new MessageBean(question, MessageBean.TYPE_SEND, System.currentTimeMillis());
+            listData.add(sendMsg);
+            adapter.notifyDataSetChanged();
+            Subscriber subscriber = new Subscriber() {
+                @Override
+                public void onCompleted() {
 
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                    listData.get(0).isSendSuccessful = false;
+                    listData.get(0).isSending = false;
+                    adapter.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onNext(Object o) {
+                    listData.get(0).isSendSuccessful = true;
+                    adapter.notifyDataSetChanged();
+
+                }
+            };
+            presenter.getAnswer(question, subscriber);
+            editText.setText("");
+        }
     }
 
     private void startSpeechReconDialog() {
@@ -184,7 +246,6 @@ public class CommunicationFragment extends Fragment implements
     public void useNightMode(boolean isNight) {
 
     }
-
 
     @Override
     public void onDestroy() {

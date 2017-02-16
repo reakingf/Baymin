@@ -13,6 +13,7 @@ import com.orhanobut.logger.Logger;
 import com.qa.fgj.baymin.di.component.AppComponent;
 import com.qa.fgj.baymin.di.component.DaggerAppComponent;
 import com.qa.fgj.baymin.di.module.AppModule;
+import com.qa.fgj.baymin.net.RestApiService;
 import com.qa.fgj.baymin.util.SystemUtil;
 import com.squareup.leakcanary.LeakCanary;
 
@@ -55,6 +56,9 @@ public class App extends Application {
         super.onCreate();
 //        instance = this;
         Constant.appContext = getApplicationContext();
+
+        //初始化网络模块
+        RestApiService.createInstance(this);
 
         //获取屏幕宽高
         getScreenSize();
