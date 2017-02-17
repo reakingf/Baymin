@@ -39,10 +39,17 @@ public class CommunicationPresenter<T extends ICommunicationView> implements IBa
         .subscribeOn(notifier)
         .subscribe(new Action1<List<MessageBean>>() {
             @Override
-            public void call(List<MessageBean> messageBeen) {
-                mView.initListViewData(messageBeen);
+            public void call(List<MessageBean> list) {
+                mView.initListViewData(list);
             }
         });
+    }
+
+    public void onRefreshing(String id, int offset, Subscriber subscriber){
+        mModel.loadData(id, offset)
+            .observeOn(executor)
+            .subscribeOn(notifier)
+            .subscribe(subscriber);
     }
 
     public void getAnswer(String question, Subscriber subscriber){
@@ -52,14 +59,18 @@ public class CommunicationPresenter<T extends ICommunicationView> implements IBa
         .subscribe(subscriber);
     }
 
-    //todo 发送成功才保存？
-    public Observable<Boolean> save(MessageBean msg, Subscriber subscriber){
-        mModel.saveData(msg);
+    public Observable<Boolean> save(MessageBean msg){
+        try{
+            mModel.saveData(msg);
+        } catch (Exception e){
+            e.printStackTrace();
+            return Observable.just(false);
+        }
         return Observable.just(true);
     }
 
     @Override
     public void detachView() {
-
+        mView = null;
     }
 }

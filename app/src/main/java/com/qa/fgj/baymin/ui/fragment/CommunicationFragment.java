@@ -30,11 +30,10 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import rx.Observable;
 import rx.Scheduler;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 /**
@@ -64,6 +63,7 @@ public class CommunicationFragment extends Fragment implements
     private MsgAdapter adapter;
     /* 初始消息id */
     private String msgID = "0";
+    private boolean mPullRefreshing = false;
 
     private CommunicationPresenter presenter;
     private final Scheduler executor = Schedulers.io();
@@ -162,7 +162,7 @@ public class CommunicationFragment extends Fragment implements
                 startSpeechReconDialog();
                 break;
             case R.id.sendButton:
-                handleQuestion();
+                handleSendQuestion();
                 break;
         }
     }
@@ -187,7 +187,7 @@ public class CommunicationFragment extends Fragment implements
     }
 
     @SuppressWarnings("unchecked")
-    private void handleQuestion() {
+    private void handleSendQuestion() {
         sendButton.setBackgroundResource(R.drawable.bg_button);
         String question = editText.getText().toString().trim();
         if (TextUtils.isEmpty(question)){
@@ -198,7 +198,7 @@ public class CommunicationFragment extends Fragment implements
             final MessageBean sendMsg = new MessageBean(question, MessageBean.TYPE_SEND, System.currentTimeMillis());
             listData.add(sendMsg);
             adapter.notifyDataSetChanged();
-            Subscriber subscriber = new Subscriber() {
+            Subscriber subscriber = new Subscriber<MessageBean>() {
                 @Override
                 public void onCompleted() {
 
@@ -206,16 +206,30 @@ public class CommunicationFragment extends Fragment implements
 
                 @Override
                 public void onError(Throwable e) {
-                    listData.get(0).isSendSuccessful = false;
-                    listData.get(0).isSending = false;
+//                    listData.get(0).isSendSuccessful = false;
+//                    listData.get(0).isSending = false;
+                    sendMsg.isSending = false;
+                    sendMsg.isSendSuccessful = false;
+                    listData.remove(listData.size() - 1);
+                    listData.add(sendMsg);
                     adapter.notifyDataSetChanged();
+                    //todo 小白回复：网络错误，请重试
+                    presenter.save(sendMsg);
                 }
 
                 @Override
-                public void onNext(Object o) {
-                    listData.get(0).isSendSuccessful = true;
-                    adapter.notifyDataSetChanged();
+                public void onNext(MessageBean messageBean) {
+                    sendMsg.isSending = false;
+                    sendMsg.isSendSuccessful = true;
+                    listData.remove(listData.size() - 1);
+                    listData.add(sendMsg);
+                    presenter.save(sendMsg);
 
+                    MessageBean respondMsg = messageBean;
+                    listData.add(respondMsg);
+                    presenter.save(respondMsg);
+                    //todo 语音合成答案
+                    adapter.notifyDataSetChanged();
                 }
             };
             presenter.getAnswer(question, subscriber);
@@ -229,8 +243,40 @@ public class CommunicationFragment extends Fragment implements
 
     @Override
     public void onRefresh() {
+        if (!mPullRefreshing){
+            mPullRefreshing = true;
+            Subscriber subscriber = new Subscriber<List<MessageBean>>() {
+                @Override
+                public void onCompleted() {
 
+                }
+
+                @Override
+                public void onError(Throwable e) {
+
+                }
+
+                @Override
+                public void onNext(List<MessageBean> beans) {
+                    if (beans != null){
+                        for (MessageBean bean : beans){
+                            listData.add(0, bean);
+                        }
+                    }
+                    if (beans == null || beans.size() < 20){
+                        listView.setPullRefreshEnable(false);
+                    }
+                    listView.stopRefresh();
+                    mPullRefreshing = false;
+                    adapter.notifyDataSetChanged();
+                    listView.setSelection(0);
+                }
+            };
+            presenter.onRefreshing(msgID, listData.size(), subscriber);
+        }
     }
+
+
 
     @Override
     public void onLoadMore() {

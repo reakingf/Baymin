@@ -110,7 +110,11 @@ public class MsgAdapter extends ArrayAdapter<MessageBean>
                 viewHolder.sendState.setVisibility(View.GONE);
             } else if (!messageBean.isSending){
                 viewHolder.sendState.setVisibility(View.VISIBLE);
-                //todo 重发按钮和圆形进度条图片待补充
+                //todo 重发按钮待补充
+                viewHolder.sendState.setImageResource(R.drawable.ic_menu_share);
+            } else {
+                viewHolder.sendState.setVisibility(View.VISIBLE);
+                //todo 默认显示圆形进度条，图片待补充
                 viewHolder.sendState.setImageResource(R.drawable.ic_menu_send);
             }
             viewHolder.sendText.setText(messageBean.getContent());
