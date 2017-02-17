@@ -14,7 +14,7 @@ import dagger.Component;
 
 @ActivityScope
 @Component(dependencies = AppComponent.class, modules = ActivityModule.class)
-public interface AcitivityComponent {
+public interface ActivityComponent {
 
     Activity getActivity();
 

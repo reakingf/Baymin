@@ -89,7 +89,7 @@ public class MessageBean {
                     .append(FIELD_CREATE_TINE + " integer,")
                     .append(FIELD_IS_SEND_MSG + " text,")
                     .append(FIELD_IS_SENDING + "text,")
-                    .append(FIELD_IS_SEND_SUCCESSFUL + "text,)");
+                    .append(FIELD_IS_SEND_SUCCESSFUL + "text)");
             return sb.toString();
         }
     }

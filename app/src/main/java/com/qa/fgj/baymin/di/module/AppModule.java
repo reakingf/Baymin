@@ -26,9 +26,4 @@ public class AppModule {
         return application;
     }
 
-//    @Provides
-//    @Singleton
-//    RetrofitHlper provideRetrofitHelper(){
-//        return new RetrofitHlper();
-//    }
 }

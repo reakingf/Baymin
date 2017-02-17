@@ -17,12 +17,14 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import com.qa.fgj.baymin.R;
+import com.qa.fgj.baymin.model.CommunicationModel;
 import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.presenter.CommunicationPresenter;
 import com.qa.fgj.baymin.ui.activity.ICommunicationView;
 import com.qa.fgj.baymin.ui.adapter.MsgAdapter;
 import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.ToastUtil;
+import com.qa.fgj.baymin.widget.SpeechRecognizeDialog;
 import com.qa.fgj.baymin.widget.XListView;
 
 import java.util.ArrayList;
@@ -30,7 +32,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import rx.Observable;
 import rx.Scheduler;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -59,6 +60,7 @@ public class CommunicationFragment extends Fragment implements
     @BindView(R.id.sendButton)
     Button sendButton;
 
+    private SpeechRecognizeDialog dialog;
     private List<MessageBean> listData;
     private MsgAdapter adapter;
     /* 初始消息id */
@@ -98,6 +100,7 @@ public class CommunicationFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         presenter = new CommunicationPresenter(executor, notifier);
+        presenter.setModel(new CommunicationModel());
     }
 
     @Nullable
@@ -121,11 +124,16 @@ public class CommunicationFragment extends Fragment implements
         listView.setXListViewListener(this);
     }
 
-    private void initView() {
-        editText.addTextChangedListener(mTextWatcher);
+    private void initView(){
+        dialog = new SpeechRecognizeDialog(getActivity());
+        dialog.setText(R.string.speech_preper);
+        dialog.setImageResource(R.drawable.microphone);
+
+        dialog.setOnClickListener(this);
         inputType.setOnClickListener(this);
         voiceButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
+        editText.addTextChangedListener(mTextWatcher);
     }
 
     @Override
@@ -163,6 +171,11 @@ public class CommunicationFragment extends Fragment implements
                 break;
             case R.id.sendButton:
                 handleSendQuestion();
+                break;
+            case R.id.speak_finish:
+                //todo 识别语音
+                ToastUtil.shortShow("识别完成");
+                dialog.dismiss();
                 break;
         }
     }
@@ -238,7 +251,7 @@ public class CommunicationFragment extends Fragment implements
     }
 
     private void startSpeechReconDialog() {
-
+        dialog.show();
     }
 
     @Override

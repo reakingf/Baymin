@@ -12,8 +12,6 @@ import java.io.File;
 
 public class Constant {
 
-    public static Context appContext;
-
     //================= PATH ====================
 
     public static final String PATH_DATA = App.getInstance().getCacheDir()

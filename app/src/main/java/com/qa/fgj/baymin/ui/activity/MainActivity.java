@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentTransaction;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -25,13 +26,13 @@ import butterknife.ButterKnife;
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    @BindView(R.id.drawer_layout)
+//    @BindView(R.id.drawer_layout)
     DrawerLayout drawer;
-    @BindView(R.id.toolbar)
+//    @BindView(R.id.toolbar)
     Toolbar toolbar;
 //    @BindView(R.id.fab)
 //    FloatingActionButton fab;
-    @BindView(R.id.nav_view)
+//    @BindView(R.id.nav_view)
     NavigationView navigationView;
 
     CommunicationFragment mCommunicationFragment;
@@ -42,7 +43,11 @@ public class MainActivity extends BaseActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
+//        ButterKnife.bind(this);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
+
         initView();
         if (savedInstanceState == null){
             replaceFragment(R.id.fragment_container, CommunicationFragment.newInstance(), CommunicationFragment.TAG);

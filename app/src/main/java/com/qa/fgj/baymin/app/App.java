@@ -14,7 +14,7 @@ import com.qa.fgj.baymin.di.component.AppComponent;
 import com.qa.fgj.baymin.di.component.DaggerAppComponent;
 import com.qa.fgj.baymin.di.module.AppModule;
 import com.qa.fgj.baymin.net.RestApiService;
-import com.qa.fgj.baymin.util.SystemUtil;
+import com.qa.fgj.baymin.util.Global;
 import com.squareup.leakcanary.LeakCanary;
 
 import java.util.HashSet;
@@ -55,7 +55,10 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
 //        instance = this;
-        Constant.appContext = getApplicationContext();
+        Global.appContext = getApplicationContext();
+
+        //初始化数据库
+        Global.initDB();
 
         //初始化网络模块
         RestApiService.createInstance(this);

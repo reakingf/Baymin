@@ -60,7 +60,7 @@
     <string name="no_music_play">there is no music playing now</string>
     <string name="change_to_English">current language is changed to English</string>
     <string name="change_to_Chinese">当前语言已切换为中文</string>
-    <string name="wait">wait for a while</string>
+    <string name="speech_preper">wait for a while</string>
     <string name="speak_please">speak now</string>
     <string name="listening">listening</string>
     <string name="recognizing">recognizing</string>

@@ -49,7 +49,7 @@ public class ToastUtil {
 
     public Toast create() {
         if (context == null){
-            context = Constant.appContext;
+            context = Global.appContext;
         }
         View contentView = View.inflate(context, R.layout.dialog_toast, null);
         TextView tv = (TextView) contentView.findViewById(R.id.tv_toast_msg);
@@ -64,6 +64,7 @@ public class ToastUtil {
         View contentView = View.inflate(context, R.layout.dialog_toast, null);
         TextView tv = (TextView) contentView.findViewById(R.id.tv_toast_msg);
         toast = new Toast(context);
+        toast.setView(contentView);
         toast.setGravity(Gravity.CENTER, 0, 0);
         toast.setDuration(Toast.LENGTH_SHORT);
         tv.setText(msg);

@@ -3,6 +3,7 @@ package com.qa.fgj.baymin.net;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.util.Log;
 
 
 /**
@@ -16,6 +17,9 @@ public final class RestApiService {
     public static RestApiService createInstance(final Context context) {
         if (instance == null) {
             instance = new RestApiService(context.getApplicationContext());
+        }
+        if (instance != null){
+            Log.d("RestApiService", "--------------not null");
         }
         return instance;
     }

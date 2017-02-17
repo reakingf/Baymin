@@ -33,11 +33,15 @@ public class CommunicationPresenter<T extends ICommunicationView> implements IBa
         mView = view;
     }
 
+    public void setModel(CommunicationModel model){
+        mModel = model;
+    }
+
     public void fetch(String id, int offset){
         mModel.loadData(id, offset)
-                .observeOn(executor)
-        .subscribeOn(notifier)
-        .subscribe(new Action1<List<MessageBean>>() {
+            .observeOn(notifier)
+            .subscribeOn(executor)
+            .subscribe(new Action1<List<MessageBean>>() {
             @Override
             public void call(List<MessageBean> list) {
                 mView.initListViewData(list);
@@ -47,16 +51,16 @@ public class CommunicationPresenter<T extends ICommunicationView> implements IBa
 
     public void onRefreshing(String id, int offset, Subscriber subscriber){
         mModel.loadData(id, offset)
-            .observeOn(executor)
-            .subscribeOn(notifier)
+            .observeOn(notifier)
+            .subscribeOn(executor)
             .subscribe(subscriber);
     }
 
     public void getAnswer(String question, Subscriber subscriber){
         mModel.getAnswer(question)
-        .observeOn(executor)
-        .subscribeOn(notifier)
-        .subscribe(subscriber);
+            .observeOn(notifier)
+            .subscribeOn(executor)
+            .subscribe(subscriber);
     }
 
     public Observable<Boolean> save(MessageBean msg){
