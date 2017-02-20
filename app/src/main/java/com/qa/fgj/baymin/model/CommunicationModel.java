@@ -1,7 +1,6 @@
 package com.qa.fgj.baymin.model;
 
 import com.qa.fgj.baymin.model.entity.MessageBean;
-import com.qa.fgj.baymin.net.BayMinHttpClientRx;
 import com.qa.fgj.baymin.net.RestApiService;
 import com.qa.fgj.baymin.net.api.CommunicationApi;
 import com.qa.fgj.baymin.util.Global;
@@ -25,7 +24,7 @@ public class CommunicationModel {
 
     public Observable<MessageBean> getAnswer(String question){
         //todo 需要将json转为MessageBean
-        return communicationApi.getRespone(question);
+        return communicationApi.getRespond(question);
     }
 
     /**

@@ -3,33 +3,41 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_camera"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="Import" />
+            android:id="@+id/setVoiceLanguage"
+            android:icon="@drawable/ic_menu_voice"
+            android:title="@string/setVoiceLanguage" />
         <item
-            android:id="@+id/nav_gallery"
+            android:id="@+id/recognizeWakeUp"
+            android:icon="@drawable/continue_asr"
+            android:title="@string/wakeUp" />
+        <item
+            android:id="@+id/helpBayMin"
+            android:icon="@drawable/idea"
+            android:title="@string/helpBayMin" />
+        <item
+            android:id="@+id/setBackground"
             android:icon="@drawable/ic_menu_gallery"
-            android:title="Gallery" />
+            android:title="@string/setBackground" />
         <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="Slideshow" />
+            android:id="@+id/introduction"
+            android:icon="@drawable/service"
+            android:title="@string/introduction" />
         <item
-            android:id="@+id/nav_manage"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Tools" />
+            android:id="@+id/checkVersion"
+            android:icon="@drawable/refresh"
+            android:title="@string/checkVersion" />
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="@string/setting">
         <menu>
             <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
+                android:id="@+id/setLanguage"
+                android:icon="@drawable/ic_menu_manage"
+                android:title="@string/setLanguage" />
             <item
-                android:id="@+id/nav_send"
+                android:id="@+id/exit"
                 android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
+                android:title="@string/exit" />
         </menu>
     </item>
 

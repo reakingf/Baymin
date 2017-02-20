@@ -23,6 +23,7 @@ import com.qa.fgj.baymin.presenter.CommunicationPresenter;
 import com.qa.fgj.baymin.ui.activity.ICommunicationView;
 import com.qa.fgj.baymin.ui.adapter.MsgAdapter;
 import com.qa.fgj.baymin.util.Global;
+import com.qa.fgj.baymin.util.LogUtil;
 import com.qa.fgj.baymin.util.ToastUtil;
 import com.qa.fgj.baymin.widget.SpeechRecognizeDialog;
 import com.qa.fgj.baymin.widget.XListView;
@@ -221,6 +222,7 @@ public class CommunicationFragment extends Fragment implements
                 public void onError(Throwable e) {
 //                    listData.get(0).isSendSuccessful = false;
 //                    listData.get(0).isSending = false;
+                    LogUtil.d("onError");
                     sendMsg.isSending = false;
                     sendMsg.isSendSuccessful = false;
                     listData.remove(listData.size() - 1);
@@ -232,6 +234,7 @@ public class CommunicationFragment extends Fragment implements
 
                 @Override
                 public void onNext(MessageBean messageBean) {
+                    LogUtil.d("onNext");
                     sendMsg.isSending = false;
                     sendMsg.isSendSuccessful = true;
                     listData.remove(listData.size() - 1);

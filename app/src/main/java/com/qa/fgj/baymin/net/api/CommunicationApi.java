@@ -13,7 +13,7 @@ import rx.Observable;
 public interface CommunicationApi{
 
     @GET("")
-    Observable<MessageBean> getRespone(
+    Observable<MessageBean> getRespond(
             @Query("q") String question
     );
 

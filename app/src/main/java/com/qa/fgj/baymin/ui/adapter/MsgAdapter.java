@@ -2,6 +2,7 @@ package com.qa.fgj.baymin.ui.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -106,7 +107,9 @@ public class MsgAdapter extends ArrayAdapter<MessageBean>
             viewHolder.receivedContainer.setVisibility(View.GONE);
             viewHolder.sendContainer.setVisibility(View.VISIBLE);
             //默认显示发送中，发送成功隐藏该控件，发送失败将原先的圆形进度条动画改为重发图片
+            Log.d("adapter", "-------Successful = " + messageBean.isSendSuccessful);
             if (messageBean.isSendSuccessful){
+                Log.d("adapter", "-------Successful");
                 viewHolder.sendState.setVisibility(View.GONE);
             } else if (!messageBean.isSending){
                 viewHolder.sendState.setVisibility(View.VISIBLE);
