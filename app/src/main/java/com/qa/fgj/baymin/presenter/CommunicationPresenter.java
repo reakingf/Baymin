@@ -3,7 +3,7 @@ package com.qa.fgj.baymin.presenter;
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.CommunicationModel;
 import com.qa.fgj.baymin.model.entity.MessageBean;
-import com.qa.fgj.baymin.ui.activity.ICommunicationView;
+import com.qa.fgj.baymin.ui.activity.view.ICommunicationView;
 
 import java.util.List;
 

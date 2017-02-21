@@ -1,8 +1,6 @@
 package com.qa.fgj.baymin.presenter;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,8 +9,7 @@ import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.LoginModel;
 import com.qa.fgj.baymin.model.entity.UserBean;
-import com.qa.fgj.baymin.ui.activity.ILoginView;
-import com.qa.fgj.baymin.util.Global;
+import com.qa.fgj.baymin.ui.activity.view.ILoginView;
 import com.qa.fgj.baymin.util.LogUtil;
 import com.qa.fgj.baymin.util.MD5Util;
 import com.qa.fgj.baymin.util.SystemUtil;
@@ -20,7 +17,6 @@ import com.qa.fgj.baymin.util.SystemUtil;
 import rx.Scheduler;
 import rx.Subscriber;
 
-import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
 
 /**

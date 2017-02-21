@@ -15,6 +15,7 @@ import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.BaseActivity;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.presenter.RegisterPresenter;
+import com.qa.fgj.baymin.ui.activity.view.IRegisterView;
 import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.LogUtil;
 
@@ -84,6 +85,7 @@ public class RegisterActivity extends BaseActivity implements IRegisterView {
             }
         });
         mPresenter = new RegisterPresenter(this, notifier, executor);
+        mPresenter.attachView(this);
     }
 
     public void signUp() {

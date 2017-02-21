@@ -1,0 +1,10 @@
+package com.qa.fgj.baymin.ui.activity.view;
+
+import com.qa.fgj.baymin.base.IBaseView;
+
+/**
+ * Created by FangGengjia on 2017/2/19.
+ */
+
+public interface IMainView extends IBaseView {
+}

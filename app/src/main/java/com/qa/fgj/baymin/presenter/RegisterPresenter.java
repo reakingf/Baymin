@@ -6,7 +6,7 @@ import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.RegisterModel;
 import com.qa.fgj.baymin.model.entity.UserBean;
-import com.qa.fgj.baymin.ui.activity.IRegisterView;
+import com.qa.fgj.baymin.ui.activity.view.IRegisterView;
 import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.MD5Util;
 import com.qa.fgj.baymin.util.SystemUtil;

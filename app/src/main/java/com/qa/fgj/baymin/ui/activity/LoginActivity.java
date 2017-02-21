@@ -16,6 +16,7 @@ import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.BaseActivity;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.presenter.LoginPresenter;
+import com.qa.fgj.baymin.ui.activity.view.ILoginView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -66,6 +67,7 @@ public class LoginActivity extends BaseActivity implements ILoginView {
 
         mProgressDialog = new ProgressDialog(LoginActivity.this, R.style.AppTheme_Dark_Dialog);
         mPresenter = new LoginPresenter(this, notifier, executor);
+        mPresenter.attachView(this);
         mPresenter.fetchCache();
 
         loginButton.setOnClickListener(new View.OnClickListener() {

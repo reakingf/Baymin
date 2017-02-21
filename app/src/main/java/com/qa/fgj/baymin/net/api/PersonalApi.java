@@ -12,10 +12,12 @@ import rx.Observable;
 
 public interface PersonalApi {
 
-    @POST("")
+    @POST("BayMinServlet/RegisterServlet")
     Observable<UserBean> register(@Body UserBean userBean);
 
-    @POST("")
+    @POST("BayMinServlet/LoginServlet")
     Observable<UserBean> login(@Body UserBean userBean);
+
+
 
 }

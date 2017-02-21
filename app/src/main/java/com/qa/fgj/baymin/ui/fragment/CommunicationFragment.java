@@ -20,7 +20,7 @@ import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.model.CommunicationModel;
 import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.presenter.CommunicationPresenter;
-import com.qa.fgj.baymin.ui.activity.ICommunicationView;
+import com.qa.fgj.baymin.ui.activity.view.ICommunicationView;
 import com.qa.fgj.baymin.ui.adapter.MsgAdapter;
 import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.LogUtil;
@@ -33,6 +33,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import rx.Scheduler;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -61,6 +62,7 @@ public class CommunicationFragment extends Fragment implements
     @BindView(R.id.sendButton)
     Button sendButton;
 
+    private Unbinder unbinder;
     private SpeechRecognizeDialog dialog;
     private List<MessageBean> listData;
     private MsgAdapter adapter;
@@ -98,6 +100,11 @@ public class CommunicationFragment extends Fragment implements
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         presenter = new CommunicationPresenter(executor, notifier);
@@ -108,7 +115,7 @@ public class CommunicationFragment extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_communication, container, false);
-        ButterKnife.bind(this, view);
+        unbinder = ButterKnife.bind(this, view);
         initListView();
         initView();
         inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -307,6 +314,12 @@ public class CommunicationFragment extends Fragment implements
     @Override
     public void useNightMode(boolean isNight) {
 
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
     }
 
     @Override

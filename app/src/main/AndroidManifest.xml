@@ -21,6 +21,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".ui.activity.LoginActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity android:name=".ui.activity.RegisterActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity android:name=".ui.activity.PersonalInfoActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity android:name=".ui.activity.WeatherActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+
     </application>
 
 </manifest>

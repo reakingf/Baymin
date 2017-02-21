@@ -1,4 +1,4 @@
-package com.qa.fgj.baymin.ui.activity;
+package com.qa.fgj.baymin.ui.activity.view;
 
 import com.qa.fgj.baymin.base.IBaseView;
 import com.qa.fgj.baymin.model.entity.MessageBean;
