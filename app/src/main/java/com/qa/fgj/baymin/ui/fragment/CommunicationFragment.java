@@ -74,7 +74,6 @@ public class CommunicationFragment extends Fragment implements
     private final Scheduler executor = Schedulers.io();
     private final Scheduler notifier = AndroidSchedulers.mainThread();
     private InputMethodManager inputMethodManager;
-
     private TextWatcher mTextWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -207,7 +206,6 @@ public class CommunicationFragment extends Fragment implements
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void handleSendQuestion() {
         sendButton.setBackgroundResource(R.drawable.bg_button);
         String question = editText.getText().toString().trim();
@@ -219,7 +217,7 @@ public class CommunicationFragment extends Fragment implements
             final MessageBean sendMsg = new MessageBean(question, MessageBean.TYPE_SEND, System.currentTimeMillis());
             listData.add(sendMsg);
             adapter.notifyDataSetChanged();
-            Subscriber subscriber = new Subscriber<MessageBean>() {
+            Subscriber<MessageBean> subscriber = new Subscriber<MessageBean>() {
                 @Override
                 public void onCompleted() {
 
@@ -248,9 +246,8 @@ public class CommunicationFragment extends Fragment implements
                     listData.add(sendMsg);
                     presenter.save(sendMsg);
 
-                    MessageBean respondMsg = messageBean;
-                    listData.add(respondMsg);
-                    presenter.save(respondMsg);
+                    listData.add(messageBean);
+                    presenter.save(messageBean);
                     //todo 语音合成答案
                     adapter.notifyDataSetChanged();
                 }
@@ -268,7 +265,7 @@ public class CommunicationFragment extends Fragment implements
     public void onRefresh() {
         if (!mPullRefreshing){
             mPullRefreshing = true;
-            Subscriber subscriber = new Subscriber<List<MessageBean>>() {
+            Subscriber<List<MessageBean>> subscriber = new Subscriber<List<MessageBean>>() {
                 @Override
                 public void onCompleted() {
 

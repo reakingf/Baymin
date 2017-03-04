@@ -48,7 +48,6 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
         mView = view;
     }
 
-
     public void fetchCache(){
         mSP = mContext.getSharedPreferences("loginInfo", MODE_PRIVATE);
         mView.bindData(mSP.getString("email",""), mSP.getString("password",""),

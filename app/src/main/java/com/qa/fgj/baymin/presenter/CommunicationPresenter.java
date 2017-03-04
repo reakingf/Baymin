@@ -49,14 +49,14 @@ public class CommunicationPresenter<T extends ICommunicationView> implements IBa
         });
     }
 
-    public void onRefreshing(String id, int offset, Subscriber subscriber){
+    public void onRefreshing(String id, int offset, Subscriber<List<MessageBean>> subscriber){
         mModel.loadData(id, offset)
             .observeOn(notifier)
             .subscribeOn(executor)
             .subscribe(subscriber);
     }
 
-    public void getAnswer(String question, Subscriber subscriber){
+    public void getAnswer(String question, Subscriber<MessageBean> subscriber){
         mModel.getAnswer(question)
             .observeOn(notifier)
             .subscribeOn(executor)

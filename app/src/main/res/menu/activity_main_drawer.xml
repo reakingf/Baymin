@@ -3,6 +3,10 @@
 
     <group android:checkableBehavior="single">
         <item
+            android:id="@+id/communication"
+            android:icon="@drawable/ic_menu_camera"
+            android:title="聊天主界面" />
+        <item
             android:id="@+id/setVoiceLanguage"
             android:icon="@drawable/ic_menu_voice"
             android:title="@string/setVoiceLanguage" />

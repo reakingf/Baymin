@@ -15,7 +15,7 @@ public class LoginModel {
 
     private PersonalApi personalApi;
 
-    public LoginModel(PersonalApi personalApi) {
+    public LoginModel() {
         this.personalApi = RestApiService.getInstance().createApi(PersonalApi.class);
     }
 

@@ -15,7 +15,7 @@ public class RegisterModel {
 
     private PersonalApi personalApi;
 
-    public RegisterModel(PersonalApi personalApi) {
+    public RegisterModel() {
         personalApi = RestApiService.getInstance().createApi(PersonalApi.class);
     }
 

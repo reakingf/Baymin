@@ -18,7 +18,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class BayMinHttpClientRx {
 
     private final Retrofit retrofit;
-    private final static String BASE_URL = "";//特定留空
+    private final static String BASE_URL = "";//特意留空
 
     public BayMinHttpClientRx(final long connTimeout, final long readTimeout, final long writeTimeout){
 

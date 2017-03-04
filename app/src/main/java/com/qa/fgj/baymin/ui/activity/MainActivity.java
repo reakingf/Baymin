@@ -28,6 +28,8 @@ import com.squareup.haha.perflib.Main;
 
 import rx.Scheduler;
 import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class MainActivity extends BaseActivity<MainPresenter> implements IMainView, View.OnClickListener,
         NavigationView.OnNavigationItemSelectedListener {
@@ -51,8 +53,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     //...
 
     private MainPresenter mPresenter;
-    private Scheduler executor;
-    private Scheduler notifier;
+    private Scheduler executor = AndroidSchedulers.mainThread();
+    private Scheduler notifier = Schedulers.io();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,6 +168,10 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         switch (id) {
+            case R.id.communication:
+                // TODO: 2017/3/4 待优化
+                replaceFragment(R.id.fragment_container, CommunicationFragment.newInstance(), CommunicationFragment.TAG);
+                break;
             case R.id.setVoiceLanguage:
                 setVoiceLanguage();
                 break;
@@ -173,6 +179,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
 //                setASRWakeUp();
                 break;
             case R.id.helpBayMin:
+                replaceFragment(R.id.fragment_container, IntroductionFragment.newInstance(), IntroductionFragment.TAG);
 //                Intent intent = new Intent(MainActivity.this, HelpLearningActivity.class);
 //                startActivity(intent);
                 break;
