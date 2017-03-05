@@ -4,9 +4,6 @@ import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.IntroductionModel;
 import com.qa.fgj.baymin.ui.activity.view.IIntroductionView;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import rx.Scheduler;
 
 /**
@@ -37,6 +34,12 @@ public class IntroductionPresenter<T extends IIntroductionView> implements IBase
     }
 
     public void fetchData(){
+//        mModel.getIntroductionOnDB();
+//        mModel.getIntroductionOnNet();
+//        mView.
+    }
+
+    public void onRefresh(){
 
     }
 

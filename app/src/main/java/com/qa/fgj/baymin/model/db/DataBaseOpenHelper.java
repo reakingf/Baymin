@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.qa.fgj.baymin.model.entity.IntroductionBean;
 import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.model.entity.UserBean;
 
@@ -24,12 +25,14 @@ public class DataBaseOpenHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(UserBean.Table.createTableSql());
         db.execSQL(MessageBean.Table.createTableSql());
+        db.execSQL(IntroductionBean.Table.createTableSql());
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL(UserBean.Table.createTableSql());
         db.execSQL(MessageBean.Table.createTableSql());
+        db.execSQL(IntroductionBean.Table.createTableSql());
     }
 
 }

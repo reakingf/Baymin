@@ -23,7 +23,6 @@ public class CommunicationModel {
     }
 
     public Observable<MessageBean> getAnswer(String question){
-        //todo 需要将json转为MessageBean
         return communicationApi.getRespond(question);
     }
 

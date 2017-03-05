@@ -2,6 +2,7 @@ package com.qa.fgj.baymin.util;
 
 import android.content.Context;
 
+import com.qa.fgj.baymin.model.db.IntroductionDBManager;
 import com.qa.fgj.baymin.model.db.MessageDBManager;
 import com.qa.fgj.baymin.model.db.UserInfoDBManager;
 
@@ -17,6 +18,7 @@ public class Global {
     public static UserInfoDBManager userInfoDB;
     /* 聊天消息数据库 */
     public static MessageDBManager messageDB;
+    public static IntroductionDBManager introductionDB;
 
     /* 登录状态 */
     public static boolean isLogin;
@@ -27,6 +29,7 @@ public class Global {
     public static void initDB(){
         userInfoDB = UserInfoDBManager.getInstance(appContext);
         messageDB = MessageDBManager.getInstance(appContext);
+        introductionDB = IntroductionDBManager.getInstance(appContext);
     }
 
     /**
@@ -40,6 +43,10 @@ public class Global {
         if (messageDB != null){
             messageDB.closeDB();
             messageDB = null;
+        }
+        if (introductionDB != null){
+            introductionDB.closeDB();
+            introductionDB = null;
         }
     }
 }
