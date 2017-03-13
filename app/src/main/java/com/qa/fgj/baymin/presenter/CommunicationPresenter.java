@@ -16,6 +16,7 @@ import rx.functions.Action1;
  * Created by FangGengjia on 2017/1/29
  */
 
+@Deprecated
 public class CommunicationPresenter<T extends ICommunicationView> implements IBasePresenter<T> {
 
     private T mView;
@@ -49,7 +50,7 @@ public class CommunicationPresenter<T extends ICommunicationView> implements IBa
         });
     }
 
-    public void onRefreshing(String id, int offset, Subscriber<List<MessageBean>> subscriber){
+    public void onRefreshing(String id, int offset, Subscriber<List> subscriber){
         mModel.loadData(id, offset)
             .observeOn(notifier)
             .subscribeOn(executor)

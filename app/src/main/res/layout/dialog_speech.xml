@@ -6,6 +6,10 @@
     android:layout_height="wrap_content"
     android:background="@drawable/dialog_loading_bg"
     android:gravity="center"
+    android:paddingTop="10dp"
+    android:paddingEnd="20dp"
+    android:paddingLeft="50dp"
+    android:paddingRight="50dp"
     tools:context = "com.qa.fgj.baymin.ui.activity.MainActivity">
 
     <TextView

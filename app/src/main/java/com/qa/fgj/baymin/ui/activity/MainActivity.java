@@ -1,30 +1,47 @@
 package com.qa.fgj.baymin.ui.activity;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.BaseActivity;
+import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.presenter.MainPresenter;
 import com.qa.fgj.baymin.ui.activity.view.IMainView;
+import com.qa.fgj.baymin.ui.adapter.MsgAdapter;
 import com.qa.fgj.baymin.ui.fragment.CommunicationFragment;
 import com.qa.fgj.baymin.ui.fragment.IntroductionFragment;
+import com.qa.fgj.baymin.util.Global;
+import com.qa.fgj.baymin.util.LogUtil;
+import com.qa.fgj.baymin.util.ToastUtil;
 import com.qa.fgj.baymin.widget.RoundImageView;
-import com.squareup.haha.perflib.Main;
+import com.qa.fgj.baymin.widget.SpeechRecognizeDialog;
+import com.qa.fgj.baymin.widget.XListView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import rx.Scheduler;
 import rx.Subscriber;
@@ -32,11 +49,10 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class MainActivity extends BaseActivity<MainPresenter> implements IMainView, View.OnClickListener,
-        NavigationView.OnNavigationItemSelectedListener {
+        NavigationView.OnNavigationItemSelectedListener, XListView.IXListViewListener {
 
     DrawerLayout drawer;
     Toolbar toolbar;
-//    FloatingActionButton fab;
     NavigationView navigationView;
     LinearLayout withoutLoginLayout;
     TextView loginButton;
@@ -46,33 +62,73 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     TextView growthValue;
     TextView temperature;
     TextView place;
+
+    XListView listView;
+    LinearLayout inputLayout;
+    ImageButton inputType;
+    Button voiceButton;
+    EditText editText;
+    Button sendButton;
+
     AlertDialog.Builder builder;
 
-    CommunicationFragment mCommunicationFragment;
-    IntroductionFragment mIntroductionFragment;
-    //...
+    private SpeechRecognizeDialog dialog;
+    private List<MessageBean> listData;
+    private MsgAdapter adapter;
+    /* 初始消息id */
+    private String msgID = "0";
+    private boolean mPullRefreshing = false;
 
-    private MainPresenter mPresenter;
-    private Scheduler executor = AndroidSchedulers.mainThread();
-    private Scheduler notifier = Schedulers.io();
+    private InputMethodManager inputMethodManager;
+    private long exitTime = 0;
+
+    private TextWatcher mTextWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            if (!"".equals(editText.getText().toString().trim())){
+                sendButton.setBackgroundResource(R.drawable.bg_button_green);
+            } else {
+                sendButton.setBackgroundResource(R.drawable.bg_button);
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+        }
+    };
+
+    private MainPresenter presenter;
+    private Scheduler uiThread = AndroidSchedulers.mainThread();
+    private Scheduler backgroundThread = Schedulers.io();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
-        mPresenter = new MainPresenter(this, executor, notifier);
-        mPresenter.attachView(this);
+        inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        presenter = new MainPresenter(this, uiThread, backgroundThread);
+        presenter.attachView(this);
         checkShouldLogin();
-        if (savedInstanceState == null) {
-            replaceFragment(R.id.fragment_container, CommunicationFragment.newInstance(), CommunicationFragment.TAG);
-        } else {
-            //TODO 从缓存中获取fragment
-        }
     }
 
     private void initView() {
         setSupportActionBar(toolbar);
+        initDrawerLayout();
+        inputLayout = (LinearLayout) findViewById(R.id.msgButtonBar);
+        inputType = (ImageButton) findViewById(R.id.inputType);
+        voiceButton = (Button) findViewById(R.id.voiceButton);
+        editText = (EditText) findViewById(R.id.textInput);
+        sendButton = (Button) findViewById(R.id.sendButton);
+        initListView();
+        setListener();
+    }
+
+    private void initDrawerLayout() {
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -85,17 +141,21 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         growthValue = (TextView) heardView.findViewById(R.id.growth);
         temperature = (TextView) heardView.findViewById(R.id.temperature);
         place = (TextView) heardView.findViewById(R.id.place);
-        setListener();
+
+        toolbar.setTitle(R.string.app_name);
+        toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
+    }
+
+    private void initListView() {
+        listView = (XListView) findViewById(R.id.listContent);
+        listView.setPullLoadEnable(false);
+        listData = new ArrayList<>();
+        adapter = new MsgAdapter(this, R.layout.item_chat_list, listData);
+        listView.setAdapter(adapter);
+        listView.setXListViewListener(this);
     }
 
     public void setListener(){
-//        fab.setOnClickListener(new View.OnClickListener() {
-            //            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
@@ -107,6 +167,26 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         userFace.setOnClickListener(this);
         temperature.setOnClickListener(this);
         place.setOnClickListener(this);
+        inputType.setOnClickListener(this);
+        voiceButton.setOnClickListener(this);
+        sendButton.setOnClickListener(this);
+        editText.addTextChangedListener(mTextWatcher);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RESULT_OK){
+            switch (requestCode){
+                case LoginActivity.REQUEST_CODE:
+                    presenter.fetchListData(msgID, listData.size());
+                    break;
+                // TODO: 2017/3/13 修改用户个人资料
+                case RESULT_OK:
+                    //语音识别成功后获取语音的文本形式内容的回调接口
+                    break;
+            }
+        }
     }
 
     public void checkShouldLogin(){
@@ -125,53 +205,72 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
             public void onNext(Boolean aBoolean) {
                 if (aBoolean){
                     LoginActivity.startForResult(MainActivity.this);
+                } else {
+                    initListViewData(null);
                 }
             }
         };
-        mPresenter.loadLoginCache(subscriber);
+        presenter.loadLoginCache(subscriber);
+    }
+
+    @Override
+    public void initListViewData(List<MessageBean> messageList){
+        listData.clear();
+        if (Global.isLogin){
+            if (messageList != null && messageList.size() > 0){
+                for (MessageBean bean : messageList) {
+//                setHandleMsgBean(item, 0);
+                    listData.add(0, bean);
+                }
+            } else {
+                MessageBean messageBean =new MessageBean(getString(R.string.welcome_tip), false,
+                        System.currentTimeMillis());
+                listData.add(messageBean);
+                presenter.save(messageBean);
+            }
+        } else{
+            listView.setPullRefreshEnable(false);
+            MessageBean messageBean =new MessageBean(getString(R.string.welcome_tip), false,
+                    System.currentTimeMillis());
+            listData.add(messageBean);
+        }
+        adapter.notifyDataSetChanged();
     }
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
+//        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer != null && drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else if (System.currentTimeMillis() - exitTime > 2000) {
+            ToastUtil.shortShow(getString(R.string.exit_tip));
+            exitTime = System.currentTimeMillis();
         } else {
+//            finish();
+//            System.exit(0);
             super.onBackPressed();
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.main, menu);
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        int id = item.getItemId();
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
         switch (id) {
-            case R.id.communication:
-                // TODO: 2017/3/4 待优化
-                replaceFragment(R.id.fragment_container, CommunicationFragment.newInstance(), CommunicationFragment.TAG);
-                break;
             case R.id.setVoiceLanguage:
                 setVoiceLanguage();
                 break;
@@ -179,7 +278,6 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
 //                setASRWakeUp();
                 break;
             case R.id.helpBayMin:
-                replaceFragment(R.id.fragment_container, IntroductionFragment.newInstance(), IntroductionFragment.TAG);
 //                Intent intent = new Intent(MainActivity.this, HelpLearningActivity.class);
 //                startActivity(intent);
                 break;
@@ -201,7 +299,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
 //                setExitApp();
                 break;
         }
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+//        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer != null) {
             drawer.closeDrawer(GravityCompat.START);
         }
@@ -219,9 +317,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
             @Override
             public void onClick(DialogInterface dialog, int which) {
 //                config.setCurrentLanguage(which);
-                String tips = getResources().getString(R.string.currentLanguage) +
-                        languageTypes[which];
-                Toast.makeText(getApplicationContext(), tips, Toast.LENGTH_LONG).show();
+                String tips = getResources().getString(R.string.currentLanguage) + languageTypes[which];
+                ToastUtil.show(tips);
             }
         });
         builder.setNegativeButton(R.string.back, new DialogInterface.OnClickListener() {
@@ -245,6 +342,20 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     @Override
     public void onClick(View view) {
         switch (view.getId()){
+            case R.id.inputType:
+                changeInputType();
+                break;
+            case R.id.voiceButton:
+                startSpeechReconDialog();
+                break;
+            case R.id.sendButton:
+                handleSendQuestion();
+                break;
+            case R.id.speak_finish:
+                //todo 识别语音
+                ToastUtil.shortShow("识别完成");
+                dialog.dismiss();
+                break;
             case R.id.header_to_login:
                 LoginActivity.startForResult(MainActivity.this);
             break;
@@ -260,8 +371,129 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         }
     }
 
+    /**
+     * 更改底部输入面板视图类型
+     */
+    private void changeInputType() {
+        if (voiceButton.isShown()) {
+            inputType.setImageResource(R.drawable.voice);
+            voiceButton.setVisibility(View.GONE);
+            editText.setVisibility(View.VISIBLE);
+            sendButton.setVisibility(View.VISIBLE);
+            inputMethodManager.showSoftInputFromInputMethod(editText.getWindowToken(), 0);
+        } else {
+            inputType.setImageResource(R.drawable.edit);
+            editText.setVisibility(View.GONE);
+            sendButton.setVisibility(View.GONE);
+            voiceButton.setVisibility(View.VISIBLE);
+            inputMethodManager.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void handleSendQuestion() {
+        sendButton.setBackgroundResource(R.drawable.bg_button);
+        String question = editText.getText().toString().trim();
+        if (TextUtils.isEmpty(question)){
+            ToastUtil.shortShow(getString(R.string.null_tips));
+        } else if (getString(R.string.close_asr).equals(question)) {
+            //todo 关闭语音连续识别
+        } else {
+            final MessageBean sendMsg = new MessageBean(question, MessageBean.TYPE_SEND, System.currentTimeMillis());
+            listData.add(sendMsg);
+            adapter.notifyDataSetChanged();
+            Subscriber subscriber = new Subscriber<MessageBean>() {
+                @Override
+                public void onCompleted() {
+                }
+
+                @Override
+                public void onError(Throwable e) {
+//                    listData.get(0).isSendSuccessful = false;
+//                    listData.get(0).isSending = false;
+                    LogUtil.d("onError: " + e.getMessage());
+                    sendMsg.isSending = false;
+                    sendMsg.isSendSuccessful = false;
+                    listData.remove(listData.size() - 1);
+                    listData.add(sendMsg);
+                    adapter.notifyDataSetChanged();
+                    //todo 小白回复：网络错误，请重试
+                    presenter.save(sendMsg);
+                }
+
+                @Override
+                public void onNext(MessageBean messageBean) {
+                    LogUtil.d("onNext");
+                    sendMsg.isSending = false;
+                    sendMsg.isSendSuccessful = true;
+                    listData.remove(listData.size() - 1);
+                    listData.add(sendMsg);
+                    presenter.save(sendMsg);
+
+                    listData.add(messageBean);
+                    presenter.save(messageBean);
+                    //todo 语音合成答案
+                    adapter.notifyDataSetChanged();
+                }
+            };
+            presenter.getAnswer(question, subscriber);
+            editText.setText("");
+        }
+    }
+
+    private void startSpeechReconDialog() {
+        if (dialog == null){
+            dialog = new SpeechRecognizeDialog(this, R.style.Theme_RecognitionDialog);
+            dialog.setOnClickListener(this);
+        }
+        dialog.show();
+        dialog.setText(R.string.speech_preper);
+        dialog.setImageResource(R.drawable.v1);
+    }
+
+    @Override
+    public void onRefresh() {
+        if (!mPullRefreshing){
+            mPullRefreshing = true;
+            Subscriber<List<MessageBean>> subscriber = new Subscriber<List<MessageBean>>() {
+                @Override
+                public void onCompleted() {
+
+                }
+
+                @Override
+                public void onError(Throwable e) {
+
+                }
+
+                @Override
+                public void onNext(List<MessageBean> beans) {
+                    if (beans != null){
+                        for (MessageBean bean : beans){
+                            listData.add(0, bean);
+                        }
+                    }
+                    if (beans == null || beans.size() < 20){
+                        listView.setPullRefreshEnable(false);
+                    }
+                    listView.stopRefresh();
+                    mPullRefreshing = false;
+                    adapter.notifyDataSetChanged();
+                    listView.setSelection(0);
+                }
+            };
+            presenter.onRefreshing(msgID, listData.size(), subscriber);
+        }
+    }
+
+    @Override
+    public void onLoadMore() {
+
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        presenter.onDestory();
     }
 }

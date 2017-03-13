@@ -9,11 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import rx.Observable;
+import rx.functions.Func1;
 
 /**
  * Created by FangGengjia on 2017/2/7.
  */
 
+@Deprecated
 public class CommunicationModel {
 
     final CommunicationApi communicationApi;

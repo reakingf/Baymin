@@ -9,6 +9,7 @@ import java.util.List;
  * Created by FangGengjia on 2017/2/10.
  */
 
+@Deprecated
 public interface ICommunicationView extends IBaseView {
 
     void initListViewData(List<MessageBean> msgList);

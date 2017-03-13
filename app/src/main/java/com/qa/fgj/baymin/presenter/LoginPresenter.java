@@ -10,6 +10,7 @@ import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.LoginModel;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.ui.activity.view.ILoginView;
+import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.LogUtil;
 import com.qa.fgj.baymin.util.MD5Util;
 import com.qa.fgj.baymin.util.SystemUtil;
@@ -120,7 +121,7 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
 
     public void onLoginSuccess(UserBean user){
         try {
-
+            Global.isLogin = true;
             UserBean localUser = mModel.getUserByEmail(mEmail);
             if (user.getImagePath() != null){
                 //服务器存在该用户的头像

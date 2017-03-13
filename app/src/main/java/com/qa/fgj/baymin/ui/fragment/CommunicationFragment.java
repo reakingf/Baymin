@@ -43,7 +43,7 @@ import rx.schedulers.Schedulers;
  * 聊天界面
  * Created by FangGengjia on 2017/1/18.
  */
-
+@Deprecated
 public class CommunicationFragment extends Fragment implements
         ICommunicationView, View.OnClickListener, XListView.IXListViewListener{
 
@@ -74,6 +74,7 @@ public class CommunicationFragment extends Fragment implements
     private final Scheduler executor = Schedulers.io();
     private final Scheduler notifier = AndroidSchedulers.mainThread();
     private InputMethodManager inputMethodManager;
+
     private TextWatcher mTextWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -132,7 +133,7 @@ public class CommunicationFragment extends Fragment implements
     }
 
     private void initView(){
-        dialog = new SpeechRecognizeDialog(getActivity());
+        dialog = new SpeechRecognizeDialog(getActivity(), R.style.Theme_RecognitionDialog);
         dialog.setText(R.string.speech_preper);
         dialog.setImageResource(R.drawable.microphone);
 
@@ -206,6 +207,7 @@ public class CommunicationFragment extends Fragment implements
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void handleSendQuestion() {
         sendButton.setBackgroundResource(R.drawable.bg_button);
         String question = editText.getText().toString().trim();
@@ -217,7 +219,7 @@ public class CommunicationFragment extends Fragment implements
             final MessageBean sendMsg = new MessageBean(question, MessageBean.TYPE_SEND, System.currentTimeMillis());
             listData.add(sendMsg);
             adapter.notifyDataSetChanged();
-            Subscriber<MessageBean> subscriber = new Subscriber<MessageBean>() {
+            Subscriber subscriber = new Subscriber<MessageBean>() {
                 @Override
                 public void onCompleted() {
 
@@ -246,6 +248,7 @@ public class CommunicationFragment extends Fragment implements
                     listData.add(sendMsg);
                     presenter.save(sendMsg);
 
+                    MessageBean respondMsg = messageBean;
                     listData.add(messageBean);
                     presenter.save(messageBean);
                     //todo 语音合成答案

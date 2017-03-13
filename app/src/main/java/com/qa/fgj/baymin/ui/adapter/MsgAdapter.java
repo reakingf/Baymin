@@ -109,16 +109,15 @@ public class MsgAdapter extends ArrayAdapter<MessageBean>
             //默认显示发送中，发送成功隐藏该控件，发送失败将原先的圆形进度条动画改为重发图片
             Log.d("adapter", "-------Successful = " + messageBean.isSendSuccessful);
             if (messageBean.isSendSuccessful){
-                Log.d("adapter", "-------Successful");
                 viewHolder.sendState.setVisibility(View.GONE);
             } else if (!messageBean.isSending){
                 viewHolder.sendState.setVisibility(View.VISIBLE);
-                //todo 重发按钮待补充
-                viewHolder.sendState.setImageResource(R.drawable.ic_menu_share);
+                //todo 带完善
+                viewHolder.sendState.setImageResource(R.drawable.resend);
             } else {
                 viewHolder.sendState.setVisibility(View.VISIBLE);
-                //todo 默认显示圆形进度条，图片待补充
-                viewHolder.sendState.setImageResource(R.drawable.ic_menu_send);
+                //todo 带完善
+                viewHolder.sendState.setImageResource(R.drawable.sending);
             }
             viewHolder.sendText.setText(messageBean.getContent());
         } else {

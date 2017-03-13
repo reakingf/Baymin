@@ -73,7 +73,7 @@ public class App extends Application {
 //        initBugly();
 
         //初始化内存泄漏检测
-        LeakCanary.install(this);
+//        LeakCanary.install(this);
 
         //初始化过度绘制检测
 //        BlockCanary.install(this, new AppBlockCanaryContext()).start();

@@ -31,6 +31,7 @@ import rx.schedulers.Schedulers;
  * Created by FangGengjia on 2017/1/18.
  */
 
+@Deprecated
 public class IntroductionFragment extends Fragment {
 
     public static final String TAG = IntroductionFragment.class.getSimpleName();

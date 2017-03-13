@@ -4,20 +4,20 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.view.Display;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.qa.fgj.baymin.R;
-import com.qa.fgj.baymin.base.IBaseView;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * 语音识别对话框
@@ -26,32 +26,32 @@ import butterknife.ButterKnife;
 
 public class SpeechRecognizeDialog extends Dialog{
 
-//    @BindView(R.id.speak_tips)
-    TextView speechContent;
-//    @BindView(R.id.iv_volume)
-    ImageView volumeView;
-//    @BindView(R.id.speak_finish)
-    Button finishButton;
+    private TextView speechContent;
+    private ImageView volumeView;
+    private Button finishButton;
 
     public SpeechRecognizeDialog(Context context) {
         super(context);
-        setContentView(R.layout.dialog_speech);
-//        ButterKnife.bind(context, this);
-        speechContent = (TextView) findViewById(R.id.speak_tips);
-        volumeView = (ImageView) findViewById(R.id.iv_volume);
-        finishButton = (Button) findViewById(R.id.speak_finish);
-
-//        WindowManager.LayoutParams lp = getWindow().getAttributes();
-//        lp.gravity = Gravity.CENTER;
-//        lp.dimAmount = 0.3f;
-////        lp.windowAnimations = R.style.dialog_anim_style;
-//        lp.width = Math.round(context.getResources().getDisplayMetrics().widthPixels * 0.9f);
-//        getWindow().setAttributes(lp);
-//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
     }
 
     public SpeechRecognizeDialog(Context context, int themeResId) {
         super(context, themeResId);
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View view = inflater.inflate(R.layout.dialog_speech, null);
+        setContentView(view);
+
+        speechContent = (TextView) view.findViewById(R.id.speak_tips);
+        volumeView = (ImageView) view.findViewById(R.id.iv_volume);
+        finishButton = (Button) view.findViewById(R.id.speak_finish);
+
+//        WindowManager.LayoutParams lp = getWindow().getAttributes();
+//        lp.gravity = Gravity.CENTER;
+//        lp.dimAmount = 0.3f;
+//        lp.windowAnimations = R.style.Theme_RecognitionDialog;
+//        lp.width = Math.round(context.getResources().getDisplayMetrics().widthPixels * 0.6f);
+//        getWindow().setAttributes(lp);
+//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
     }
 
     protected SpeechRecognizeDialog(Context context, boolean cancelable, OnCancelListener cancelListener) {
