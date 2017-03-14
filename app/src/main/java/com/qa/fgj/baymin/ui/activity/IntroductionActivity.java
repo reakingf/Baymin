@@ -1,27 +1,25 @@
-package com.qa.fgj.baymin.ui.fragment;
+package com.qa.fgj.baymin.ui.activity;
 
 import android.app.AlertDialog;
-import android.app.Fragment;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.qa.fgj.baymin.R;
+import com.qa.fgj.baymin.base.BaseActivity;
 import com.qa.fgj.baymin.presenter.IntroductionPresenter;
+import com.qa.fgj.baymin.ui.view.IIntroductionView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -31,10 +29,7 @@ import rx.schedulers.Schedulers;
  * Created by FangGengjia on 2017/1/18.
  */
 
-@Deprecated
-public class IntroductionFragment extends Fragment {
-
-    public static final String TAG = IntroductionFragment.class.getSimpleName();
+public class IntroductionActivity extends BaseActivity implements IIntroductionView {
 
     private final static int DAILY_TALK = 0;
     private final static int MUSIC = 1;
@@ -57,29 +52,34 @@ public class IntroductionFragment extends Fragment {
     private List<String> introInfo = new ArrayList<>();
 
     IntroductionPresenter presenter;
-    private Scheduler executor = AndroidSchedulers.mainThread();
-    private Scheduler notifier = Schedulers.io();
+    private Scheduler uiThread = AndroidSchedulers.mainThread();
+    private Scheduler backgroundThread = Schedulers.io();
 
-    public static IntroductionFragment newInstance(){
-        return new IntroductionFragment();
+    public static void start(Context context){
+        Intent intent = new Intent(context, IntroductionActivity.class);
+        context.startActivity(intent);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        presenter = new IntroductionPresenter(executor, notifier);
-        presenter.fetchData();
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_introduction, container, false);
-        ListView listView = (ListView) view.findViewById(R.id.introduction_listView);
+        setContentView(R.layout.activity_introduction);
+        ListView listView = (ListView) findViewById(R.id.introduction_listView);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(getString(R.string.introduction));
+        toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationIcon(R.drawable.back);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
         bindData();
-        adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, list);
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, list);
         listView.setAdapter(adapter);
-        dialog = new AlertDialog.Builder(getActivity());
+        dialog = new AlertDialog.Builder(this);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -95,7 +95,8 @@ public class IntroductionFragment extends Fragment {
                 dialog.show();
             }
         });
-        return view;
+        presenter = new IntroductionPresenter(uiThread, backgroundThread);
+        presenter.fetchData();
     }
 
     public void bindData(){
@@ -129,4 +130,20 @@ public class IntroductionFragment extends Fragment {
         introInfo.add(ACTION, getString(R.string.intro_action));
     }
 
+    @Override
+    public void showError(String msg) {
+
+    }
+
+    @Override
+    public void useNightMode(boolean isNight) {
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        presenter.detachView();
+        presenter.onDestroy();
+    }
 }

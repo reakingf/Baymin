@@ -8,7 +8,7 @@ import android.os.PersistableBundle;
 
 import com.qa.fgj.baymin.base.BaseActivity;
 import com.qa.fgj.baymin.presenter.PersonalInfoPresenter;
-import com.qa.fgj.baymin.ui.activity.view.IPersonalInfoView;
+import com.qa.fgj.baymin.ui.view.IPersonalInfoView;
 
 /**
  * Created by FangGengjia on 2017/2/19.
@@ -51,5 +51,6 @@ public class PersonalInfoActivity extends BaseActivity<PersonalInfoPresenter> im
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
     }
 }

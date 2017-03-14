@@ -5,7 +5,7 @@ import android.content.Context;
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.MainModel;
 import com.qa.fgj.baymin.model.entity.MessageBean;
-import com.qa.fgj.baymin.ui.activity.view.IMainView;
+import com.qa.fgj.baymin.ui.view.IMainView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +36,11 @@ public class MainPresenter<T extends IMainView> implements IBasePresenter<T> {
         this.uiThread = uiThread;
         this.backgroundThread = backgroundThread;
         this.mModel = new MainModel(this.context);
+    }
+
+    @Override
+    public void onCreate() {
+
     }
 
     @Override
@@ -95,7 +100,8 @@ public class MainPresenter<T extends IMainView> implements IBasePresenter<T> {
         view = null;
     }
 
-    public void onDestory(){
+    @Override
+    public void onDestroy() {
         if (subscriptionList != null && subscriptionList.size() > 0){
             for (Subscription subscription : subscriptionList) {
                 if (subscription != null && !subscription.isUnsubscribed()){
@@ -103,6 +109,5 @@ public class MainPresenter<T extends IMainView> implements IBasePresenter<T> {
                 }
             }
         }
-        detachView();
     }
 }

@@ -7,7 +7,12 @@ import com.qa.fgj.baymin.base.IBaseView;
  * Created by FangGengjia on 2017/2/19.
  */
 
-public class WetherPresenter implements IBasePresenter {
+public class WeatherPresenter implements IBasePresenter {
+    @Override
+    public void onCreate() {
+
+    }
+
     @Override
     public void attachView(IBaseView view) {
 
@@ -15,6 +20,11 @@ public class WetherPresenter implements IBasePresenter {
 
     @Override
     public void detachView() {
+
+    }
+
+    @Override
+    public void onDestroy() {
 
     }
 }

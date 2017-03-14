@@ -11,12 +11,22 @@ public class PersonalInfoPresenter implements IBasePresenter {
 
 
     @Override
+    public void onCreate() {
+
+    }
+
+    @Override
     public void attachView(IBaseView view) {
 
     }
 
     @Override
     public void detachView() {
+
+    }
+
+    @Override
+    public void onDestroy() {
 
     }
 }

@@ -16,9 +16,7 @@
         android:background="@color/main_color"
         app:popupTheme="@style/AppTheme.PopupOverlay" />
 
-    <!--<include layout="@layout/content_main" />-->
-
-    <include layout="@layout/fragment_communication" />
+    <include layout="@layout/content_main" />
 
     <!--<android.support.design.widget.FloatingActionButton-->
         <!--android:id="@+id/fab"-->

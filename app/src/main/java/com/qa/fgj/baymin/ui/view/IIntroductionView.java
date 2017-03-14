@@ -1,4 +1,4 @@
-package com.qa.fgj.baymin.ui.activity.view;
+package com.qa.fgj.baymin.ui.view;
 
 import com.qa.fgj.baymin.base.IBaseView;
 

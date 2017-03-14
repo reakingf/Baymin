@@ -15,7 +15,7 @@ import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.BaseActivity;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.presenter.RegisterPresenter;
-import com.qa.fgj.baymin.ui.activity.view.IRegisterView;
+import com.qa.fgj.baymin.ui.view.IRegisterView;
 import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.LogUtil;
 
@@ -49,7 +49,7 @@ public class RegisterActivity extends BaseActivity implements IRegisterView {
     TextView loginLink;
 
     ProgressDialog mProgressDialog;
-    RegisterPresenter mPresenter;
+    RegisterPresenter presenter;
     Scheduler executor = AndroidSchedulers.mainThread();
     Scheduler notifier = Schedulers.newThread();
 
@@ -84,8 +84,8 @@ public class RegisterActivity extends BaseActivity implements IRegisterView {
                 finish();
             }
         });
-        mPresenter = new RegisterPresenter(this, notifier, executor);
-        mPresenter.attachView(this);
+        presenter = new RegisterPresenter(this, notifier, executor);
+        presenter.attachView(this);
     }
 
     public void signUp() {
@@ -94,10 +94,10 @@ public class RegisterActivity extends BaseActivity implements IRegisterView {
         //防止用户重复点击
         registerButton.setEnabled(false);
 
-        mPresenter.inputName(nameText.getText().toString().trim());
-        mPresenter.inputEmail(emailText.getText().toString().trim());
-        mPresenter.inputPassword(passwordText.getText().toString().trim());
-        mPresenter.inputConfirmPassword(confirmPasswordText.getText().toString().trim());
+        presenter.inputName(nameText.getText().toString().trim());
+        presenter.inputEmail(emailText.getText().toString().trim());
+        presenter.inputPassword(passwordText.getText().toString().trim());
+        presenter.inputConfirmPassword(confirmPasswordText.getText().toString().trim());
 
         Subscriber<UserBean> subscriber = new Subscriber<UserBean>() {
             @Override
@@ -116,7 +116,7 @@ public class RegisterActivity extends BaseActivity implements IRegisterView {
             }
         };
 
-        mPresenter.signUp(subscriber);
+        presenter.signUp(subscriber);
     }
 
     @Override
@@ -134,7 +134,7 @@ public class RegisterActivity extends BaseActivity implements IRegisterView {
     @Override
     public void onSignUpSuccess(UserBean userBean) {
         registerButton.setEnabled(true);
-        mPresenter.save(userBean);
+        presenter.save(userBean);
         Intent intent = new Intent();
         //将明文密码传给登录界面
         userBean.setPassword(passwordText.getText().toString().trim());
@@ -188,5 +188,7 @@ public class RegisterActivity extends BaseActivity implements IRegisterView {
             }
             mProgressDialog = null;
         }
+        presenter.detachView();
+        presenter.onDestroy();
     }
 }

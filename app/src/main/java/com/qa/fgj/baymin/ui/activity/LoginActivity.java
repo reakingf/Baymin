@@ -16,7 +16,7 @@ import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.BaseActivity;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.presenter.LoginPresenter;
-import com.qa.fgj.baymin.ui.activity.view.ILoginView;
+import com.qa.fgj.baymin.ui.view.ILoginView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -44,7 +44,7 @@ public class LoginActivity extends BaseActivity implements ILoginView {
     TextView registerLink;
 
     ProgressDialog mProgressDialog;
-    LoginPresenter mPresenter;
+    LoginPresenter presenter;
     Scheduler executor = AndroidSchedulers.mainThread();
     Scheduler notifier = Schedulers.newThread();
     public static final int REQUEST_CODE = 0xaa01;
@@ -66,9 +66,9 @@ public class LoginActivity extends BaseActivity implements ILoginView {
         ButterKnife.bind(this);
 
         mProgressDialog = new ProgressDialog(LoginActivity.this, R.style.AppTheme_Dark_Dialog);
-        mPresenter = new LoginPresenter(this, notifier, executor);
-        mPresenter.attachView(this);
-        mPresenter.fetchCache();
+        presenter = new LoginPresenter(this, notifier, executor);
+        presenter.attachView(this);
+        presenter.fetchCache();
 
         loginButton.setOnClickListener(new View.OnClickListener() {
 
@@ -100,9 +100,9 @@ public class LoginActivity extends BaseActivity implements ILoginView {
     public void login() {
         loginButton.setEnabled(false);
 
-        mPresenter.inputEmail(emailText.getText().toString().trim());
-        mPresenter.inputPassword(passwordText.getText().toString().trim());
-        mPresenter.isSelectRememberBox(isRememberBox.isChecked());
+        presenter.inputEmail(emailText.getText().toString().trim());
+        presenter.inputPassword(passwordText.getText().toString().trim());
+        presenter.isSelectRememberBox(isRememberBox.isChecked());
 
         Subscriber<UserBean> subscriber = new Subscriber<UserBean>() {
             @Override
@@ -131,7 +131,7 @@ public class LoginActivity extends BaseActivity implements ILoginView {
             }
         };
 
-        mPresenter.login(subscriber);
+        presenter.login(subscriber);
     }
 
     @Override
@@ -178,7 +178,7 @@ public class LoginActivity extends BaseActivity implements ILoginView {
     public void onLoginSuccess(final UserBean user) {
         loginButton.setEnabled(true);
         if (user != null){
-            mPresenter.onLoginSuccess(user);
+            presenter.onLoginSuccess(user);
         }
     }
 
@@ -218,5 +218,7 @@ public class LoginActivity extends BaseActivity implements ILoginView {
             }
             mProgressDialog = null;
         }
+        presenter.detachView();
+        presenter.onDestroy();
     }
 }

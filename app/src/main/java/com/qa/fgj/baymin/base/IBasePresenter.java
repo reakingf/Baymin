@@ -6,7 +6,11 @@ package com.qa.fgj.baymin.base;
 
 public interface IBasePresenter<T extends IBaseView> {
 
+    void onCreate();
+
     void attachView(T view);
 
     void detachView();
+
+    void onDestroy();
 }

@@ -7,14 +7,14 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import com.qa.fgj.baymin.base.BaseActivity;
-import com.qa.fgj.baymin.presenter.WetherPresenter;
-import com.qa.fgj.baymin.ui.activity.view.IWetherView;
+import com.qa.fgj.baymin.presenter.WeatherPresenter;
+import com.qa.fgj.baymin.ui.view.IWetherView;
 
 /**
  * Created by FangGengjia on 2017/2/19.
  */
 
-public class WeatherActivity extends BaseActivity<WetherPresenter> implements IWetherView {
+public class WeatherActivity extends BaseActivity<WeatherPresenter> implements IWetherView {
 
     public static final int REQUEST_CODE = 0xab12;
 

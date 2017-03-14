@@ -20,7 +20,7 @@ import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.model.CommunicationModel;
 import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.presenter.CommunicationPresenter;
-import com.qa.fgj.baymin.ui.activity.view.ICommunicationView;
+import com.qa.fgj.baymin.ui.view.ICommunicationView;
 import com.qa.fgj.baymin.ui.adapter.MsgAdapter;
 import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.LogUtil;
@@ -114,7 +114,7 @@ public class CommunicationFragment extends Fragment implements
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_communication, container, false);
+        View view = inflater.inflate(R.layout.content_main, container, false);
         unbinder = ButterKnife.bind(this, view);
         initListView();
         initView();

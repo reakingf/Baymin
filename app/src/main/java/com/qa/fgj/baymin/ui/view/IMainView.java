@@ -1,4 +1,4 @@
-package com.qa.fgj.baymin.ui.activity.view;
+package com.qa.fgj.baymin.ui.view;
 
 import com.qa.fgj.baymin.base.IBaseView;
 import com.qa.fgj.baymin.model.entity.MessageBean;
@@ -6,11 +6,10 @@ import com.qa.fgj.baymin.model.entity.MessageBean;
 import java.util.List;
 
 /**
- * Created by FangGengjia on 2017/2/10.
+ * Created by FangGengjia on 2017/2/19.
  */
 
-@Deprecated
-public interface ICommunicationView extends IBaseView {
+public interface IMainView extends IBaseView {
 
     void initListViewData(List<MessageBean> msgList);
 

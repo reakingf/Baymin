@@ -14,7 +14,6 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -23,16 +22,13 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.BaseActivity;
 import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.presenter.MainPresenter;
-import com.qa.fgj.baymin.ui.activity.view.IMainView;
+import com.qa.fgj.baymin.ui.view.IMainView;
 import com.qa.fgj.baymin.ui.adapter.MsgAdapter;
-import com.qa.fgj.baymin.ui.fragment.CommunicationFragment;
-import com.qa.fgj.baymin.ui.fragment.IntroductionFragment;
 import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.LogUtil;
 import com.qa.fgj.baymin.util.ToastUtil;
@@ -278,15 +274,13 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
 //                setASRWakeUp();
                 break;
             case R.id.helpBayMin:
-//                Intent intent = new Intent(MainActivity.this, HelpLearningActivity.class);
-//                startActivity(intent);
+                AdviseQAActivity.start(this);
                 break;
             case R.id.setBackground:
-//                Toast.makeText(thisContext.getApplicationContext(), "待完善", Toast.LENGTH_LONG).show();
+                ToastUtil.shortShow("待完善");
                 break;
             case R.id.introduction:
-//                Intent intent1 = new Intent(MainActivity.this, IntroductionActivity.class);
-//                startActivity(intent1);
+                IntroductionActivity.start(this);
                 break;
             case R.id.checkVersion:
 //                updateManager = new UpdateManager(thisContext);
@@ -494,6 +488,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        presenter.onDestory();
+        presenter.detachView();
+        presenter.onDestroy();
     }
 }

@@ -1,4 +1,4 @@
-package com.qa.fgj.baymin.ui.activity.view;
+package com.qa.fgj.baymin.ui.view;
 
 import com.qa.fgj.baymin.base.IBaseView;
 import com.qa.fgj.baymin.model.entity.UserBean;
@@ -7,22 +7,22 @@ import com.qa.fgj.baymin.model.entity.UserBean;
  * Created by FangGengjia on 2017/2/18.
  */
 
-public interface ILoginView extends IBaseView {
+public interface IRegisterView extends IBaseView {
 
-    void bindData(String email, String password, boolean isRemember);
+    void inputNameError(String msg);
 
     void inputEmailError(String msg);
 
     void inputPasswordError(String msg);
 
+    void inputConfirmPasswordError(String msg);
+
     void showProgressDialog();
 
     void dismissProgressDialog();
 
-    void onLoginFailed(String tips);
+    void onSignUpFailed(String tips);
 
-    void onLoginSuccess(UserBean userBean);
-
-    void finishWithResult(UserBean user);
+    void onSignUpSuccess(UserBean userBean);
 
 }

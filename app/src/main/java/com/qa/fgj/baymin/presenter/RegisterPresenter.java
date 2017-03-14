@@ -6,13 +6,14 @@ import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.RegisterModel;
 import com.qa.fgj.baymin.model.entity.UserBean;
-import com.qa.fgj.baymin.ui.activity.view.IRegisterView;
+import com.qa.fgj.baymin.ui.view.IRegisterView;
 import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.MD5Util;
 import com.qa.fgj.baymin.util.SystemUtil;
 
 import rx.Scheduler;
 import rx.Subscriber;
+import rx.Subscription;
 
 /**
  * Created by FangGengjia on 2017/2/18.
@@ -30,6 +31,8 @@ public class RegisterPresenter<T extends IRegisterView> implements IBasePresente
     private String mEmail;
     private String mPassword;
     private String mConfirmPassword;
+
+    private Subscription subscription;
 
     public RegisterPresenter(Context context, Scheduler notifier, Scheduler executor) {
         mContext = context;
@@ -71,7 +74,7 @@ public class RegisterPresenter<T extends IRegisterView> implements IBasePresente
 
         mView.showProgressDialog();
 
-        mModel.signUp(generateUserBean())
+        subscription = mModel.signUp(generateUserBean())
                 .observeOn(notifier)
                 .subscribeOn(executor)
                 .subscribe(subscriber);
@@ -125,7 +128,19 @@ public class RegisterPresenter<T extends IRegisterView> implements IBasePresente
     }
 
     @Override
+    public void onCreate() {
+
+    }
+
+    @Override
     public void detachView() {
         mView = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        if (subscription != null && !subscription.isUnsubscribed()){
+            subscription.unsubscribe();
+        }
     }
 }

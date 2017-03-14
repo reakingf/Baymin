@@ -41,6 +41,12 @@
         <activity android:name=".ui.activity.RegisterActivity"
             android:theme="@style/AppTheme.Dark" />
 
+        <activity android:name=".ui.activity.AdviseQAActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity android:name=".ui.activity.IntroductionActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+
         <activity android:name=".ui.activity.PersonalInfoActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 

@@ -3,7 +3,7 @@ package com.qa.fgj.baymin.presenter;
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.CommunicationModel;
 import com.qa.fgj.baymin.model.entity.MessageBean;
-import com.qa.fgj.baymin.ui.activity.view.ICommunicationView;
+import com.qa.fgj.baymin.ui.view.ICommunicationView;
 
 import java.util.List;
 
@@ -27,6 +27,11 @@ public class CommunicationPresenter<T extends ICommunicationView> implements IBa
     public CommunicationPresenter(Scheduler executor, Scheduler notifier) {
         this.executor = executor;
         this.notifier = notifier;
+    }
+
+    @Override
+    public void onCreate() {
+
     }
 
     @Override
@@ -77,5 +82,9 @@ public class CommunicationPresenter<T extends ICommunicationView> implements IBa
     @Override
     public void detachView() {
         mView = null;
+    }
+
+    @Override
+    public void onDestroy() {
     }
 }

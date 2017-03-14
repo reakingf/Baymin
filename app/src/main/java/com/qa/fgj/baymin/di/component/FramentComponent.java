@@ -5,7 +5,7 @@ import android.app.Activity;
 import com.qa.fgj.baymin.di.FragmentScope;
 import com.qa.fgj.baymin.di.module.FragmentModule;
 import com.qa.fgj.baymin.ui.fragment.CommunicationFragment;
-import com.qa.fgj.baymin.ui.fragment.IntroductionFragment;
+import com.qa.fgj.baymin.ui.activity.IntroductionActivity;
 
 import dagger.Component;
 
@@ -21,7 +21,7 @@ public interface FramentComponent {
 
     void inject(CommunicationFragment communicationFragment);
 
-    void inject(IntroductionFragment introductionFragment);
+    void inject(IntroductionActivity introductionActivity);
 
     //todo 待添加
 

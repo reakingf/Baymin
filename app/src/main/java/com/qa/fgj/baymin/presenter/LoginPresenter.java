@@ -9,7 +9,7 @@ import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.LoginModel;
 import com.qa.fgj.baymin.model.entity.UserBean;
-import com.qa.fgj.baymin.ui.activity.view.ILoginView;
+import com.qa.fgj.baymin.ui.view.ILoginView;
 import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.LogUtil;
 import com.qa.fgj.baymin.util.MD5Util;
@@ -17,6 +17,7 @@ import com.qa.fgj.baymin.util.SystemUtil;
 
 import rx.Scheduler;
 import rx.Subscriber;
+import rx.Subscription;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -37,11 +38,17 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
     private String mEmail;
     private String mPassword;
     private boolean mIsRemember;
+    private Subscription subscription;
 
     public LoginPresenter(Context context, Scheduler notifier, Scheduler executor) {
         this.mContext = context;
         mNotifier = notifier;
         mExecutor = executor;
+    }
+
+    @Override
+    public void onCreate() {
+
     }
 
     @Override
@@ -84,7 +91,7 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
         userBean.setPassword(MD5Util.getMD5Digest(mPassword));
 
         mView.showProgressDialog();
-        mModel.login(userBean)
+        subscription = mModel.login(userBean)
                 .subscribeOn(mNotifier)
                 .observeOn(mExecutor)
                 .subscribe(subscriber);
@@ -186,5 +193,12 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
     @Override
     public void detachView() {
         mView = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        if (subscription != null && !subscription.isUnsubscribed()){
+            subscription.unsubscribe();
+        }
     }
 }
