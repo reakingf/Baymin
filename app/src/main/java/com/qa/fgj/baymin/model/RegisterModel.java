@@ -1,6 +1,7 @@
 package com.qa.fgj.baymin.model;
 
 
+import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.net.RestApiService;
 import com.qa.fgj.baymin.net.api.PersonalInfoApi;
@@ -19,8 +20,11 @@ public class RegisterModel {
         personalInfoApi = RestApiService.getInstance().createApi(PersonalInfoApi.class);
     }
 
-    public Observable<UserBean> signUp(UserBean userBean){
-        return personalInfoApi.register(userBean);
+    public Observable<BayMinResponse<UserBean>> signUp(
+            String nickname,
+            String email,
+            String password){
+        return personalInfoApi.register(nickname, email, password);
     }
 
 }

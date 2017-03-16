@@ -5,6 +5,7 @@ import android.content.Context;
 import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.RegisterModel;
+import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.ui.view.IRegisterView;
 import com.qa.fgj.baymin.util.Global;
@@ -61,7 +62,7 @@ public class RegisterPresenter<T extends IRegisterView> implements IBasePresente
         this.mConfirmPassword = confirmPassword;
     }
 
-    public void signUp(Subscriber<UserBean> subscriber){
+    public void signUp(Subscriber<BayMinResponse<UserBean>> subscriber){
         if (!SystemUtil.isNetworkConnected()){
             mView.onSignUpFailed("网络不可用，请检查你的网络");
             return;
@@ -74,7 +75,7 @@ public class RegisterPresenter<T extends IRegisterView> implements IBasePresente
 
         mView.showProgressDialog();
 
-        subscription = mModel.signUp(generateUserBean())
+        subscription = mModel.signUp(mName, mEmail, MD5Util.getMD5Digest(mPassword))
                 .observeOn(notifier)
                 .subscribeOn(executor)
                 .subscribe(subscriber);
@@ -110,15 +111,15 @@ public class RegisterPresenter<T extends IRegisterView> implements IBasePresente
         return valid;
     }
 
-    private UserBean generateUserBean(){
-        UserBean userBean = new UserBean();
-        userBean.setUsername(mName);
-        userBean.setEmail(mEmail);
-        userBean.setPassword(MD5Util.getMD5Digest(mPassword));
-        userBean.setImagePath("");
-        userBean.setGrowthValue("0");
-        return userBean;
-    }
+//    private UserBean generateUserBean(){
+//        UserBean userBean = new UserBean();
+//        userBean.setUsername(mName);
+//        userBean.setEmail(mEmail);
+//        userBean.setPassword(MD5Util.getMD5Digest(mPassword));
+//        userBean.setImagePath("");
+//        userBean.setGrowthValue("0");
+//        return userBean;
+//    }
 
     public void save(UserBean userBean){
         if (Global.userInfoDB == null){

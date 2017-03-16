@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,16 +14,19 @@ import android.widget.Toast;
 
 import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.BaseActivity;
+import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.presenter.RegisterPresenter;
 import com.qa.fgj.baymin.ui.view.IRegisterView;
 import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.LogUtil;
+import com.qa.fgj.baymin.util.ToastUtil;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import rx.Scheduler;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -50,8 +54,8 @@ public class RegisterActivity extends BaseActivity implements IRegisterView {
 
     ProgressDialog mProgressDialog;
     RegisterPresenter presenter;
-    Scheduler executor = AndroidSchedulers.mainThread();
-    Scheduler notifier = Schedulers.newThread();
+    Scheduler uiThread = AndroidSchedulers.mainThread();
+    Scheduler backgroundThread = Schedulers.newThread();
 
     public static final int REQUEST_CODE = 0xac01;
 
@@ -69,7 +73,7 @@ public class RegisterActivity extends BaseActivity implements IRegisterView {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-        Global.initDB();
+//        Global.initDB();
         ButterKnife.bind(this);
         mProgressDialog = new ProgressDialog(RegisterActivity.this, R.style.AppTheme_Dark_Dialog);
         registerButton.setOnClickListener(new View.OnClickListener() {
@@ -84,13 +88,12 @@ public class RegisterActivity extends BaseActivity implements IRegisterView {
                 finish();
             }
         });
-        presenter = new RegisterPresenter(this, notifier, executor);
+        presenter = new RegisterPresenter(this, backgroundThread, uiThread);
         presenter.attachView(this);
+        presenter.onCreate();
     }
 
     public void signUp() {
-        LogUtil.d("SignUp");
-
         //防止用户重复点击
         registerButton.setEnabled(false);
 
@@ -99,20 +102,25 @@ public class RegisterActivity extends BaseActivity implements IRegisterView {
         presenter.inputPassword(passwordText.getText().toString().trim());
         presenter.inputConfirmPassword(confirmPasswordText.getText().toString().trim());
 
-        Subscriber<UserBean> subscriber = new Subscriber<UserBean>() {
+        Subscriber<BayMinResponse<UserBean>> subscriber = new Subscriber<BayMinResponse<UserBean>>() {
             @Override
             public void onCompleted() {
-                dismissProgressDialog();
             }
 
             @Override
             public void onError(Throwable e) {
-                onSignUpFailed("注册失败");
+                onSignUpFailed(TextUtils.isEmpty(e.getMessage()) ? "网络连接超时，请重试" : e.getMessage());
             }
 
             @Override
-            public void onNext(UserBean userBean) {
-                onSignUpSuccess(userBean);
+            public void onNext(BayMinResponse<UserBean> response) {
+                if (!response.isSucceed()){
+                    onSignUpFailed(response.getMessage());
+                } else if (response.getContent() == null){
+                    onSignUpFailed("数据解析错误");
+                } else {
+                    onSignUpSuccess(response.getContent());
+                }
             }
         };
 
@@ -147,9 +155,9 @@ public class RegisterActivity extends BaseActivity implements IRegisterView {
     public void onSignUpFailed(String tips) {
         registerButton.setEnabled(true);
         if (tips == null)
-            Toast.makeText(getBaseContext(), getString(R.string.register_failed), Toast.LENGTH_LONG).show();
+            ToastUtil.show(getString(R.string.register_failed));
         else
-            Toast.makeText(getBaseContext(), tips, Toast.LENGTH_LONG).show();
+            ToastUtil.show(tips);
     }
 
     public void inputNameError(String msg){
