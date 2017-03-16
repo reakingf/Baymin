@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.LoginModel;
+import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.ui.view.ILoginView;
 import com.qa.fgj.baymin.util.Global;
@@ -20,6 +21,7 @@ import rx.Subscriber;
 import rx.Subscription;
 
 import static android.content.Context.MODE_PRIVATE;
+import static android.util.Patterns.EMAIL_ADDRESS;
 
 /**
  * Created by FangGengjia on 2017/2/18.
@@ -27,39 +29,39 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
 
-    private Context mContext;
-    private T mView;
-    private LoginModel mModel;
-    private Scheduler mExecutor;
-    private Scheduler mNotifier;
+    private Context context;
+    private T view;
+    private LoginModel model;
+    private Scheduler uiThread;
+    private Scheduler backgroundThread;
 
-    private SharedPreferences mSP;
-    private SharedPreferences.Editor mEditor;
+    private SharedPreferences sp;
+    private SharedPreferences.Editor editor;
     private String mEmail;
     private String mPassword;
     private boolean mIsRemember;
     private Subscription subscription;
 
-    public LoginPresenter(Context context, Scheduler notifier, Scheduler executor) {
-        this.mContext = context;
-        mNotifier = notifier;
-        mExecutor = executor;
+    public LoginPresenter(Context context, Scheduler uiThread, Scheduler backgroundThread) {
+        this.context = context;
+        this.uiThread = uiThread;
+        this.backgroundThread = backgroundThread;
     }
 
     @Override
     public void onCreate() {
-        mModel = new LoginModel();
+        model = new LoginModel();
     }
 
     @Override
     public void attachView(T view) {
-        mView = view;
+        this.view = view;
     }
 
     public void fetchCache(){
-        mSP = mContext.getSharedPreferences("loginInfo", MODE_PRIVATE);
-        mView.bindData(mSP.getString("email",""), mSP.getString("password",""),
-                mSP.getBoolean("isRemember", false));
+        sp = context.getSharedPreferences("loginInfo", MODE_PRIVATE);
+        view.bindData(sp.getString("email",""), sp.getString("password",""),
+                sp.getBoolean("isRemember", false));
     }
 
     public void inputEmail(String email){
@@ -74,83 +76,85 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
         mIsRemember = isRemember;
     }
 
-    public void login(Subscriber<UserBean> subscriber){
+    public void login(Subscriber<BayMinResponse<UserBean>> subscriber){
 
         if (!SystemUtil.isNetworkConnected()){
-            mView.onLoginFailed("网络不可用，请检查网络");
+            view.onLoginFailed("网络不可用，请检查网络");
             return;
         }
 
         if (!validate()) {
-            mView.onLoginFailed(null);
+            view.onLoginFailed(null);
             return;
         }
 
-        UserBean userBean = new UserBean();
-        userBean.setEmail(mEmail);
-        userBean.setPassword(MD5Util.getMD5Digest(mPassword));
-
-        mView.showProgressDialog();
-        subscription = mModel.login(userBean)
-                .subscribeOn(mNotifier)
-                .observeOn(mExecutor)
+        view.showProgressDialog();
+        subscription = model.login(mEmail, MD5Util.getMD5Digest(mPassword))
+                .subscribeOn(backgroundThread)
+                .observeOn(uiThread)
                 .subscribe(subscriber);
     }
 
 
     private boolean validate() {
-        if (mEmail.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(mEmail).matches()) {
-            mView.inputEmailError(mContext.getString(R.string.wrong_email));
+        if (mEmail == null || !EMAIL_ADDRESS.matcher(mEmail).matches()) {
+            view.inputEmailError(context.getString(R.string.wrong_email));
             return false;
-        } else {
-            mView.inputEmailError(null);
         }
+//        else {
+//            view.inputEmailError(null);
+//        }
 
-        if (mPassword.isEmpty() || mPassword.length() < 6 || mPassword.length() > 20) {
-            mView.inputPasswordError(mContext.getString(R.string.psw_wrong_length));
+        if (mPassword == null || mPassword.length() < 6 || mPassword.length() > 20) {
+            view.inputPasswordError(context.getString(R.string.psw_wrong_length));
             return false;
-        } else {
-            mView.inputPasswordError(null);
         }
-
-        mEditor = mSP.edit();
-        if (mIsRemember){
-            mEditor.putString("email", mEmail);
-            mEditor.putString("password", mPassword);
-            mEditor.putBoolean("isRemember", true);
-        }else {
-            mEditor.clear();
-        }
-        mEditor.apply();
+//        else {
+//            view.inputPasswordError(null);
+//        }
         return true;
     }
 
+    /**
+     * 缓存登录信息
+     */
+    public void saveLoginCache() {
+        if (mIsRemember){
+            editor = sp.edit();
+            editor.putString("email", mEmail);
+            editor.putString("password", mPassword);
+            editor.putBoolean("isRemember", true);
+            editor.apply();
+        }
+    }
 
     public void onLoginSuccess(UserBean user){
         try {
             Global.isLogin = true;
-            UserBean localUser = mModel.getUserByEmail(mEmail);
+            UserBean localUser = model.getUserByEmail(mEmail);
             if (user.getImagePath() != null){
                 //服务器存在该用户的头像
                 if (localUser == null || localUser.getImagePath() == null){
                     //本地数据库不存在，从服务器下载后保存到本地
-                    mModel.saveUser(user);
+                    model.saveUser(user);
+                    //本地图片不存在，从服务器下载并保存到本地
 //                    syncImage(user);
                 } else {
                     Bitmap bitmap = BitmapFactory.decodeFile(localUser.getImagePath());
                     if (bitmap == null){
-                        //本地图片不存在，从服务器下载后保存到本地
+                        //本地路径找不到图片，从服务器下载并保存到本地
 //                        syncImage(user);
                     } else {
+                        // TODO: 2017/3/16 是否有必要？理论上修改都是从本地修改，修改完同时会保存到本地
                         bitmap.recycle();
                         user.setImagePath(localUser.getImagePath());
-                        mModel.saveOrUpdateUser(user);
-                        mView.finishWithResult(user);
+                        model.saveOrUpdateUser(user);
+                        view.finishWithResult(user);
                     }
                 }
             } else {
-                mModel.saveOrUpdateUser(user);
-                mView.finishWithResult(user);
+                model.saveOrUpdateUser(user);
+                view.finishWithResult(user);
             }
         } catch (Exception e){
             LogUtil.d("----exception: " + e);
@@ -192,7 +196,7 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
 
     @Override
     public void detachView() {
-        mView = null;
+        view = null;
     }
 
     @Override
@@ -201,4 +205,5 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
             subscription.unsubscribe();
         }
     }
+
 }

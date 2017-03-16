@@ -15,9 +15,11 @@ import android.widget.Toast;
 
 import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.BaseActivity;
+import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.presenter.LoginPresenter;
 import com.qa.fgj.baymin.ui.view.ILoginView;
+import com.qa.fgj.baymin.util.ToastUtil;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,8 +48,8 @@ public class LoginActivity extends BaseActivity implements ILoginView {
 
     ProgressDialog mProgressDialog;
     LoginPresenter presenter;
-    Scheduler executor = AndroidSchedulers.mainThread();
-    Scheduler notifier = Schedulers.newThread();
+    Scheduler uiThread = AndroidSchedulers.mainThread();
+    Scheduler backgroundThread = Schedulers.newThread();
     public static final int REQUEST_CODE = 0xaa01;
 
     public static void start(Context context){
@@ -67,7 +69,7 @@ public class LoginActivity extends BaseActivity implements ILoginView {
         ButterKnife.bind(this);
 
         mProgressDialog = new ProgressDialog(LoginActivity.this, R.style.AppTheme_Dark_Dialog);
-        presenter = new LoginPresenter(this, notifier, executor);
+        presenter = new LoginPresenter(this, uiThread, backgroundThread);
         presenter.onCreate();
         presenter.attachView(this);
         presenter.fetchCache();
@@ -106,10 +108,9 @@ public class LoginActivity extends BaseActivity implements ILoginView {
         presenter.inputPassword(passwordText.getText().toString().trim());
         presenter.isSelectRememberBox(isRememberBox.isChecked());
 
-        Subscriber<UserBean> subscriber = new Subscriber<UserBean>() {
+        Subscriber<BayMinResponse<UserBean>> subscriber = new Subscriber<BayMinResponse<UserBean>>() {
             @Override
             public void onCompleted() {
-                dismissProgressDialog();
             }
 
             @Override
@@ -119,17 +120,25 @@ public class LoginActivity extends BaseActivity implements ILoginView {
             }
 
             @Override
-            public void onNext(UserBean userBean) {
-                switch (userBean.getUsername()) {
-                    case "邮箱未注册":
-                        onLoginFailed(getString(R.string.has_not_sign_up));
-                        break;
-                    case "密码错误":
-                        onLoginFailed(getString(R.string.wrong_psw));
-                        break;
-                    default:
-                        onLoginSuccess(userBean);
-                        break;
+            public void onNext(BayMinResponse<UserBean> response) {
+//                switch (userBean.getUsername()) {
+//                    case "邮箱未注册":
+//                        onLoginFailed(getString(R.string.has_not_sign_up));
+//                        break;
+//                    case "密码错误":
+//                        onLoginFailed(getString(R.string.wrong_psw));
+//                        break;
+//                    default:
+//                        onLoginSuccess(userBean);
+//                        break;
+//                }
+                if (!response.isSucceed()){
+                    onLoginFailed(response.getMessage());
+                } else if (response.getContent() == null){
+                    onLoginFailed("数据解析错误");
+                } else {
+                    onLoginSuccess(response.getContent());
+                    presenter.saveLoginCache();
                 }
             }
         };
@@ -164,9 +173,8 @@ public class LoginActivity extends BaseActivity implements ILoginView {
         if (requestCode == RegisterActivity.REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 UserBean user = (UserBean) data.getSerializableExtra("user");
-                String password = user.getPassword();
                 emailText.setText(user.getEmail());
-                passwordText.setText(password);
+                passwordText.setText(user.getPassword());
                 login();
             }
         }
@@ -188,11 +196,11 @@ public class LoginActivity extends BaseActivity implements ILoginView {
 
     public void onLoginFailed(String tips) {
         mProgressDialog.dismiss();
-        if (tips == null)
-            Toast.makeText(getBaseContext(), getString(R.string.login_failed), Toast.LENGTH_LONG).show();
-        else
-            Toast.makeText(getBaseContext(), tips, Toast.LENGTH_LONG).show();
         loginButton.setEnabled(true);
+        if (tips == null)
+            ToastUtil.show(getString(R.string.login_failed));
+        else
+            ToastUtil.show(tips);
     }
 
     @Override

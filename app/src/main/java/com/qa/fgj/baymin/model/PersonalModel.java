@@ -1,7 +1,7 @@
 package com.qa.fgj.baymin.model;
 
 import com.qa.fgj.baymin.net.RestApiService;
-import com.qa.fgj.baymin.net.api.PersonalApi;
+import com.qa.fgj.baymin.net.api.PersonalInfoApi;
 
 import rx.Observable;
 
@@ -11,10 +11,10 @@ import rx.Observable;
 
 public class PersonalModel {
 
-    private PersonalApi personalApi;
+    private PersonalInfoApi personalInfoApi;
 
     public PersonalModel() {
-        personalApi = RestApiService.getInstance().createApi(PersonalApi.class);
+        personalInfoApi = RestApiService.getInstance().createApi(PersonalInfoApi.class);
     }
 
     Observable<Boolean> uploadAvatar(){
