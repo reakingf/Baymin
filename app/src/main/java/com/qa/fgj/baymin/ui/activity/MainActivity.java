@@ -390,7 +390,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                 LoginActivity.startForResult(MainActivity.this);
                 break;
             case R.id.face:
-                PersonalInfoActivity.startForResult(MainActivity.this);
+                PersonalInfoActivity.startForResult(MainActivity.this, userName.getText().toString());
+                break;
             case R.id.temperature:
             case R.id.place:
                 WeatherActivity.startForResult(MainActivity.this);

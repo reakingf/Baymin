@@ -16,7 +16,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.PersistableBundle;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
@@ -34,17 +33,22 @@ import com.qa.fgj.baymin.base.BaseActivity;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.presenter.PersonalInfoPresenter;
 import com.qa.fgj.baymin.ui.view.IPersonalInfoView;
+import com.qa.fgj.baymin.util.LogUtil;
 import com.qa.fgj.baymin.util.ToastUtil;
 import com.qa.fgj.baymin.widget.RoundImageView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import rx.Scheduler;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+
 /**
  * Created by FangGengjia on 2017/2/19.
  */
 
-public class PersonalInfoActivity extends BaseActivity<PersonalInfoPresenter> implements IPersonalInfoView,
+public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoView,
         View.OnClickListener{
 
     public static final int REQUEST_CODE = 0xaa12;
@@ -75,6 +79,8 @@ public class PersonalInfoActivity extends BaseActivity<PersonalInfoPresenter> im
     private Uri imgUri;
     private String imgPath;
 
+    private Scheduler uiThread = AndroidSchedulers.mainThread();
+    private Scheduler backgroundThread = Schedulers.io();
     private PersonalInfoPresenter presenter;
     private UserBean mUser = new UserBean();
 
@@ -83,18 +89,19 @@ public class PersonalInfoActivity extends BaseActivity<PersonalInfoPresenter> im
         context.startActivity(intent);
     }
 
-    public static void startForResult(final Activity activity){
+    public static void startForResult(final Activity activity, String account){
         Intent intent = new Intent(activity, PersonalInfoActivity.class);
+        intent.putExtra("account", account);
         activity.startActivityForResult(intent, REQUEST_CODE);
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState, PersistableBundle persistentState) {
-        super.onCreate(savedInstanceState, persistentState);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_personal_info);
         initView();
         setEvenListener();
-        presenter = new PersonalInfoPresenter();
+        presenter = new PersonalInfoPresenter(uiThread, backgroundThread);
         presenter.attachView(this);
         presenter.onCreate();
         fetchData();
@@ -102,7 +109,6 @@ public class PersonalInfoActivity extends BaseActivity<PersonalInfoPresenter> im
 
     private void initView(){
         initToolbar();
-        Log.d("PersonalInfoActivity", "---------------");
         avatarLayout = (RelativeLayout) findViewById(R.id.avatar_layout);
         avatarView = (RoundImageView) findViewById(R.id.avatar);
         nicknameLayout = (LinearLayout) findViewById(R.id.nickname_layout);
@@ -159,6 +165,21 @@ public class PersonalInfoActivity extends BaseActivity<PersonalInfoPresenter> im
     }
 
     @Override
+    public void showData(UserBean userBean) {
+        if (userBean != null){
+//            avatarView.setImageResource();
+            nickname.setText(userBean.getUsername());
+            email.setText(userBean.getEmail());
+            growth.setText(userBean.getGrowthValue());
+            if ("男".equals(userBean.getSex())){
+                sexBoy.setChecked(true);
+            } else {
+                sexGirl.setChecked(true);
+            }
+        }
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.avatar_layout:
@@ -180,7 +201,7 @@ public class PersonalInfoActivity extends BaseActivity<PersonalInfoPresenter> im
     }
 
     private void showChoosePictureDialog() {
-        builder = new AlertDialog.Builder(this, R.style.AppTheme_Dark_Dialog);
+        builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.set_user_image);
         String fromAlbum = getString(R.string.selectFromAlbum);
         String takePhoto = getString(R.string.takePhoto);
@@ -236,21 +257,6 @@ public class PersonalInfoActivity extends BaseActivity<PersonalInfoPresenter> im
             startActivityForResult(openCamera, TAKE_PHOTO);
         }else {
             ToastUtil.show(getString(R.string.no_camera));
-        }
-    }
-
-    @Override
-    public void showData(UserBean userBean) {
-        if (userBean != null){
-//            avatarView.setImageResource();
-            nickname.setText(userBean.getUsername());
-            email.setText(userBean.getEmail());
-            growth.setText(userBean.getGrowthValue());
-            if ("男".equals(userBean.getSex())){
-                sexBoy.setChecked(true);
-            } else {
-                sexGirl.setChecked(true);
-            }
         }
     }
 
@@ -399,6 +405,7 @@ public class PersonalInfoActivity extends BaseActivity<PersonalInfoPresenter> im
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
+        presenter.detachView();
+        presenter.onDestroy();
     }
 }

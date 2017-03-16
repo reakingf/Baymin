@@ -1,7 +1,9 @@
 package com.qa.fgj.baymin.model;
 
+import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.net.RestApiService;
 import com.qa.fgj.baymin.net.api.PersonalInfoApi;
+import com.qa.fgj.baymin.util.Global;
 
 import rx.Observable;
 
@@ -17,11 +19,15 @@ public class PersonalModel {
         personalInfoApi = RestApiService.getInstance().createApi(PersonalInfoApi.class);
     }
 
-    Observable<Boolean> uploadAvatar(){
+    public Observable<UserBean> queryByAccount(String account){
+        return Observable.just(Global.userInfoDB.queryByAccount(account));
+    }
+
+    public Observable<Boolean> uploadAvatar(){
         return Observable.just(true);
     }
 
-    Observable<Boolean> modifyUserInfo(){
+    public Observable<Boolean> modifyUserInfo(){
         return Observable.just(true);
     }
 
