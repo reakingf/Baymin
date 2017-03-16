@@ -20,6 +20,7 @@ import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.presenter.LoginPresenter;
 import com.qa.fgj.baymin.ui.view.ILoginView;
+import com.qa.fgj.baymin.util.LogUtil;
 import com.qa.fgj.baymin.util.ToastUtil;
 
 import butterknife.BindView;
@@ -117,6 +118,7 @@ public class LoginActivity extends BaseActivity implements ILoginView {
             @Override
             public void onError(Throwable e) {
                 onLoginFailed(TextUtils.isEmpty(e.getMessage()) ? "网络连接超时，请重试" : e.getMessage());
+                e.printStackTrace();
             }
 
             @Override
@@ -216,7 +218,7 @@ public class LoginActivity extends BaseActivity implements ILoginView {
     @Override
     public void finishWithResult(UserBean user){
         Intent data = new Intent();
-        data.putExtra("user",user);
+        data.putExtra("user", user);
         setResult(RESULT_OK, data);
         finish();
     }

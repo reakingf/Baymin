@@ -28,11 +28,10 @@ public class ToastUtil {
 
     public static void show(String msg){
         if (toastUtil == null){
-            toastUtil = new ToastUtil(App.getInstance());
+            toastUtil = new ToastUtil(Global.appContext);
         }
         toastUtil.setText(msg);
         toastUtil.create().show();
-
     }
 
     public static void shortShow(String msg) {
@@ -54,6 +53,7 @@ public class ToastUtil {
         View contentView = View.inflate(context, R.layout.dialog_toast, null);
         TextView tv = (TextView) contentView.findViewById(R.id.tv_toast_msg);
         toast = new Toast(context);
+        toast.setView(contentView);
         toast.setGravity(Gravity.CENTER, 0, 0);
         toast.setDuration(Toast.LENGTH_LONG);
         tv.setText(msg);

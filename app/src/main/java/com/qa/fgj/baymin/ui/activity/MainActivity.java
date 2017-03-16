@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.ContextCompat;
@@ -26,6 +27,7 @@ import android.widget.TextView;
 import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.BaseActivity;
 import com.qa.fgj.baymin.model.entity.MessageBean;
+import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.presenter.MainPresenter;
 import com.qa.fgj.baymin.ui.view.IMainView;
 import com.qa.fgj.baymin.ui.adapter.MsgAdapter;
@@ -139,9 +141,6 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         temperature = (TextView) heardView.findViewById(R.id.temperature);
         place = (TextView) heardView.findViewById(R.id.place);
 
-//        withoutLoginLayout.setVisibility(View.GONE);
-//        loggedInLayout.setVisibility(View.VISIBLE);
-
         toolbar.setTitle(R.string.app_name);
         toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
     }
@@ -176,16 +175,49 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RESULT_OK){
+        if (resultCode == RESULT_OK){
             switch (requestCode){
                 case LoginActivity.REQUEST_CODE:
+                    UserBean user = (UserBean) data.getSerializableExtra("user");
+                    if (user != null) {
+                        updateHeaderLayout(user);
+                    }
+                    // TODO: 2017/3/16 这里需要绑定对应的用户
                     presenter.fetchListData(msgID, listData.size());
                     break;
-                // TODO: 2017/3/13 修改用户个人资料
                 case RESULT_OK:
                     //语音识别成功后获取语音的文本形式内容的回调接口
                     break;
             }
+        }
+    }
+
+    private void updateHeaderLayout(UserBean user) {
+        if (!Global.isLogin){
+            loggedInLayout.setVisibility(View.GONE);
+            withoutLoginLayout.setVisibility(View.VISIBLE);
+        } else {
+            withoutLoginLayout.setVisibility(View.GONE);
+            loggedInLayout.setVisibility(View.VISIBLE);
+            if (user != null){
+                //TODO:暂未获取成长值和天气预报
+                String name = user.getUsername();
+                String growth = user.getGrowthValue();
+                String imgPath = null;
+                if (name != null){
+                    userName.setText(name);
+                }
+//                Bitmap bitmap = PhotoUtils.getSpecifiedBitmap(imgPath, 100, 100);
+//                if (bitmap != null){
+//                    userFace.setImageBitmap(bitmap);
+//                } else {
+//                    userFace.setImageDrawable(getResources().getDrawable(R.drawable.default_user_image));
+//                }
+                if (growth != null){
+                    growthValue.setText(growth);
+                }
+            }
+            //todo 更改聊天界面用户头像
         }
     }
 
@@ -357,9 +389,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
             case R.id.header_to_login:
                 LoginActivity.startForResult(MainActivity.this);
                 break;
-            case R.id.user_face_img:
+            case R.id.face:
                 PersonalInfoActivity.startForResult(MainActivity.this);
-                break;
             case R.id.temperature:
             case R.id.place:
                 WeatherActivity.startForResult(MainActivity.this);

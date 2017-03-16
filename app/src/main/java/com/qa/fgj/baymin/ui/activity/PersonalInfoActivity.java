@@ -21,6 +21,7 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -101,6 +102,7 @@ public class PersonalInfoActivity extends BaseActivity<PersonalInfoPresenter> im
 
     private void initView(){
         initToolbar();
+        Log.d("PersonalInfoActivity", "---------------");
         avatarLayout = (RelativeLayout) findViewById(R.id.avatar_layout);
         avatarView = (RoundImageView) findViewById(R.id.avatar);
         nicknameLayout = (LinearLayout) findViewById(R.id.nickname_layout);
@@ -178,7 +180,7 @@ public class PersonalInfoActivity extends BaseActivity<PersonalInfoPresenter> im
     }
 
     private void showChoosePictureDialog() {
-        builder = new AlertDialog.Builder(this);
+        builder = new AlertDialog.Builder(this, R.style.AppTheme_Dark_Dialog);
         builder.setTitle(R.string.set_user_image);
         String fromAlbum = getString(R.string.selectFromAlbum);
         String takePhoto = getString(R.string.takePhoto);

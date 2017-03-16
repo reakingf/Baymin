@@ -3,10 +3,9 @@
     android:id="@+id/tv_toast_msg"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:maxWidth="200dp"
     android:background="@drawable/dialog_toast_bg"
     android:gravity="center"
-    android:padding="8dp"
+    android:padding="15dp"
     android:text="当前已是最新版本"
     android:textColor="#5f5f5f"
     android:textSize="16sp" />

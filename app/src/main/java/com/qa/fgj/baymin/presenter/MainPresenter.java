@@ -6,6 +6,7 @@ import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.MainModel;
 import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.ui.view.IMainView;
+import com.qa.fgj.baymin.util.LogUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,11 +59,21 @@ public class MainPresenter<T extends IMainView> implements IBasePresenter<T> {
 
     public void fetchListData(String id, int offset){
         Subscription subscription = mModel.loadData(id, offset)
-                .observeOn(backgroundThread)
-                .subscribeOn(uiThread)
-                .subscribe(new Action1<List<MessageBean>>() {
+                .subscribeOn(backgroundThread)
+                .observeOn(uiThread)
+                .subscribe(new Subscriber<List<MessageBean>>() {
                     @Override
-                    public void call(List<MessageBean> list) {
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        LogUtil.d(e.getMessage());
+                    }
+
+                    @Override
+                    public void onNext(List<MessageBean> list) {
                         view.initListViewData(list);
                     }
                 });

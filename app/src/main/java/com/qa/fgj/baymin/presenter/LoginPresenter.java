@@ -135,27 +135,21 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
             if (user.getImagePath() != null){
                 //服务器存在该用户的头像
                 if (localUser == null || localUser.getImagePath() == null){
-                    //本地数据库不存在，从服务器下载后保存到本地
-                    model.saveUser(user);
-                    //本地图片不存在，从服务器下载并保存到本地
-//                    syncImage(user);
+                    //本地图片不存在，从服务器下载并返回图片保存地址
+//                   user.setImagePath(syncImage(user));
                 } else {
                     Bitmap bitmap = BitmapFactory.decodeFile(localUser.getImagePath());
                     if (bitmap == null){
                         //本地路径找不到图片，从服务器下载并保存到本地
-//                        syncImage(user);
+//                      user.setImagePath(syncImage(user));
                     } else {
-                        // TODO: 2017/3/16 是否有必要？理论上修改都是从本地修改，修改完同时会保存到本地
                         bitmap.recycle();
                         user.setImagePath(localUser.getImagePath());
-                        model.saveOrUpdateUser(user);
-                        view.finishWithResult(user);
                     }
                 }
-            } else {
-                model.saveOrUpdateUser(user);
-                view.finishWithResult(user);
             }
+            model.saveOrUpdateUser(user);
+            view.finishWithResult(user);
         } catch (Exception e){
             LogUtil.d("----exception: " + e);
         }
