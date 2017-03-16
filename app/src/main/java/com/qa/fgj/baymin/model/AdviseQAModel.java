@@ -24,7 +24,7 @@ public class AdviseQAModel {
                 .map(new Func1<BayMinResponse, Boolean>() {
                     @Override
                     public Boolean call(BayMinResponse response) {
-                        return response.isSuccessed();
+                        return response.isSucceed();
                     }
                 });
     }

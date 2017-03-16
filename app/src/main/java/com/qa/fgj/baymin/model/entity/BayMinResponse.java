@@ -6,11 +6,10 @@ package com.qa.fgj.baymin.model.entity;
 
 public class BayMinResponse<T> {
 
-    int code;
-    int statusCode;
-    boolean isSuccessed;
-    String message;
-    T content;
+    private int code;
+    private boolean isSucceed;
+    private String message;
+    private T content;
 
     public int getCode() {
         return code;
@@ -20,20 +19,12 @@ public class BayMinResponse<T> {
         this.code = code;
     }
 
-    public int getStatusCode() {
-        return statusCode;
+    public boolean isSucceed() {
+        return isSucceed;
     }
 
-    public void setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
-    }
-
-    public boolean isSuccessed() {
-        return isSuccessed;
-    }
-
-    public void setSuccessed(boolean successed) {
-        isSuccessed = successed;
+    public void setSuccessed(boolean succeed) {
+        isSucceed = succeed;
     }
 
     public String getMessage() {
@@ -50,5 +41,13 @@ public class BayMinResponse<T> {
 
     public void setContent(T content) {
         this.content = content;
+    }
+
+    @Override
+    public String toString() {
+        return "code = " + code
+                + ", isSucceed = " + isSucceed
+                + ", message = " + message
+                + ", content：{ " + content.toString() + "}";
     }
 }

@@ -16,6 +16,7 @@ public class UserBean implements Serializable{
     private String password;
     private String imagePath;
     private String growthValue;
+    private String sex;
 
     public Integer getId() {
         return id;
@@ -65,6 +66,14 @@ public class UserBean implements Serializable{
         this.growthValue = growthValue;
     }
 
+    public String getSex() {
+        return sex;
+    }
+
+    public void setSex(String sex) {
+        this.sex = sex;
+    }
+
     public static final class Table {
         /** 用户信息表 **/
         public static final String TABLE_NAME = "UserInfoTable";
@@ -80,6 +89,7 @@ public class UserBean implements Serializable{
         public static final String FIELD_IMG_URL = "user_img_url";
         /** 成长值 */
         public static final String FIELD_GROWTH_VALUE = "user_growth_value";
+        public static final String FIELD_SEX = "sex";
 
         /**
          * 创建用户信息表的sql语句
@@ -93,9 +103,19 @@ public class UserBean implements Serializable{
                     .append(FIELD_EMAIL + " text,")
                     .append(FIELD_PASSWORD + " text,")
                     .append(FIELD_GROWTH_VALUE + " text,")
+                    .append(FIELD_SEX + " text,")
                     .append(FIELD_IMG_URL + " text)");
             return sb.toString();
         }
     }
 
+    @Override
+    public String toString() {
+        return "username = " + username
+                + ", email = " + email
+                + ", password = " + password
+                + ", growth value = " + growthValue
+                + ", sex = " + sex
+                + ", imgPath = " + imagePath;
+    }
 }

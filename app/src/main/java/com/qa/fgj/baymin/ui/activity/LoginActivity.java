@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -67,6 +68,7 @@ public class LoginActivity extends BaseActivity implements ILoginView {
 
         mProgressDialog = new ProgressDialog(LoginActivity.this, R.style.AppTheme_Dark_Dialog);
         presenter = new LoginPresenter(this, notifier, executor);
+        presenter.onCreate();
         presenter.attachView(this);
         presenter.fetchCache();
 
@@ -113,6 +115,7 @@ public class LoginActivity extends BaseActivity implements ILoginView {
             @Override
             public void onError(Throwable e) {
                 onLoginFailed("网络连接超时，请重试");
+                Log.d("onError", "----------" + e.getMessage());
             }
 
             @Override
@@ -176,6 +179,7 @@ public class LoginActivity extends BaseActivity implements ILoginView {
 //    }
 
     public void onLoginSuccess(final UserBean user) {
+        mProgressDialog.dismiss();
         loginButton.setEnabled(true);
         if (user != null){
             presenter.onLoginSuccess(user);
@@ -183,6 +187,7 @@ public class LoginActivity extends BaseActivity implements ILoginView {
     }
 
     public void onLoginFailed(String tips) {
+        mProgressDialog.dismiss();
         if (tips == null)
             Toast.makeText(getBaseContext(), getString(R.string.login_failed), Toast.LENGTH_LONG).show();
         else

@@ -48,7 +48,7 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
 
     @Override
     public void onCreate() {
-
+        mModel = new LoginModel();
     }
 
     @Override

@@ -108,6 +108,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         initView();
         inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         presenter = new MainPresenter(this, uiThread, backgroundThread);
+        presenter.onCreate();
         presenter.attachView(this);
         checkShouldLogin();
     }
@@ -129,14 +130,17 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         View heardView = navigationView.getHeaderView(0);
-        withoutLoginLayout = (LinearLayout) findViewById(R.id.header_without_login);
+        withoutLoginLayout = (LinearLayout) heardView.findViewById(R.id.header_without_login);
         loginButton = (TextView) heardView.findViewById(R.id.header_to_login);
-        loggedInLayout = (LinearLayout) findViewById(R.id.header_already_login);
+        loggedInLayout = (LinearLayout) heardView.findViewById(R.id.header_already_login);
         userFace = (RoundImageView) heardView.findViewById(R.id.face);
         userName = (TextView) heardView.findViewById(R.id.user_name);
         growthValue = (TextView) heardView.findViewById(R.id.growth);
         temperature = (TextView) heardView.findViewById(R.id.temperature);
         place = (TextView) heardView.findViewById(R.id.place);
+
+//        withoutLoginLayout.setVisibility(View.GONE);
+//        loggedInLayout.setVisibility(View.VISIBLE);
 
         toolbar.setTitle(R.string.app_name);
         toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
@@ -352,7 +356,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                 break;
             case R.id.header_to_login:
                 LoginActivity.startForResult(MainActivity.this);
-            break;
+                break;
             case R.id.user_face_img:
                 PersonalInfoActivity.startForResult(MainActivity.this);
                 break;
