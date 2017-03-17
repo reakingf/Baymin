@@ -1,21 +1,21 @@
 package com.qa.fgj.baymin.presenter;
 
+import android.app.Activity;
+import android.net.Uri;
+
 import com.qa.fgj.baymin.base.IBasePresenter;
-import com.qa.fgj.baymin.base.IBaseView;
 import com.qa.fgj.baymin.model.PersonalModel;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.ui.view.IPersonalInfoView;
-import com.qa.fgj.baymin.util.Global;
+import com.qa.fgj.baymin.util.PhotoUtils;
 import com.qa.fgj.baymin.util.ToastUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import rx.Observable;
 import rx.Scheduler;
 import rx.Subscriber;
 import rx.Subscription;
-import rx.schedulers.Schedulers;
 
 /**
  * Created by FangGengjia on 2017/2/19.
@@ -23,6 +23,7 @@ import rx.schedulers.Schedulers;
 
 public class PersonalInfoPresenter<T extends IPersonalInfoView> implements IBasePresenter<T> {
 
+    private Activity activity;
     private T view;
     private PersonalModel model;
 
@@ -30,8 +31,10 @@ public class PersonalInfoPresenter<T extends IPersonalInfoView> implements IBase
     private Scheduler backgroundThread;
 
     private List<Subscription> subscriptionList = new ArrayList<>();
+    private PhotoUtils photoUtils;
 
-    public PersonalInfoPresenter(Scheduler uiThread, Scheduler backgroundThread) {
+    public PersonalInfoPresenter(Activity activity, Scheduler uiThread, Scheduler backgroundThread) {
+        this.activity = activity;
         this.uiThread = uiThread;
         this.backgroundThread = backgroundThread;
     }
@@ -39,6 +42,7 @@ public class PersonalInfoPresenter<T extends IPersonalInfoView> implements IBase
     @Override
     public void onCreate() {
         model = new PersonalModel();
+        photoUtils = new PhotoUtils(activity);
     }
 
     @Override
@@ -66,6 +70,35 @@ public class PersonalInfoPresenter<T extends IPersonalInfoView> implements IBase
                         view.showData(userBean);
                     }
                 });
+        subscriptionList.add(subscription);
+    }
+
+    public void openAlbum() {
+        photoUtils.openAlbum();
+    }
+
+    public Uri openCamera(String avatarName) {
+        return photoUtils.openCamera(avatarName);
+    }
+
+    public void cropPicture(Uri uri) {
+        photoUtils.cropPicture(uri);
+    }
+
+    public void handleAlbumPicture(Uri uri, Subscriber<String> subscriber) {
+        Subscription subscription = photoUtils.handleAlbumPicture(uri)
+                .subscribeOn(backgroundThread)
+                .observeOn(uiThread)
+                .subscribe(subscriber);
+        subscriptionList.add(subscription);
+
+    }
+
+    public void handleCropPicture(Uri uri, String avatarName, Subscriber<String> subscriber) {
+        Subscription subscription = photoUtils.handleCropPicture(uri, avatarName)
+            .subscribeOn(backgroundThread)
+            .observeOn(uiThread)
+            .subscribe(subscriber);
         subscriptionList.add(subscription);
     }
 

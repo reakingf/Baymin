@@ -1,27 +1,16 @@
 package com.qa.fgj.baymin.ui.activity;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -33,18 +22,18 @@ import com.qa.fgj.baymin.base.BaseActivity;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.presenter.PersonalInfoPresenter;
 import com.qa.fgj.baymin.ui.view.IPersonalInfoView;
-import com.qa.fgj.baymin.util.LogUtil;
+import com.qa.fgj.baymin.util.PhotoUtils;
 import com.qa.fgj.baymin.util.ToastUtil;
+import com.qa.fgj.baymin.widget.EditDialog;
 import com.qa.fgj.baymin.widget.RoundImageView;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-
 import rx.Scheduler;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 /**
+ * 个人信息页
  * Created by FangGengjia on 2017/2/19.
  */
 
@@ -53,7 +42,9 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
 
     public static final int REQUEST_CODE = 0xaa12;
 
-    Toolbar toolbar;
+//    Toolbar toolbar;
+    ImageView back;
+    TextView saveChange;
     RelativeLayout avatarLayout;
     RoundImageView avatarView;
     LinearLayout nicknameLayout;
@@ -69,20 +60,38 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
 
     ProgressDialog progressDialog;
     AlertDialog.Builder builder;
-    /** 设置头像标记：从相册中选择、拍照、裁剪 **/
-    public static final int FROM_ALBUM = 0;
-    public static final int TAKE_PHOTO = 1;
-    public static final int CROP_PICTURE = 2;
+    private PhotoUtils photoUtils;
     private boolean isAllowOpenAlbum = true;
     private boolean isAllowOpenCamera = true;
     private String avatarName;
+    private static final int AVATAR_WITH = 100;
+    private static final int AVATAR_HEIGHT = 100;
+    //存储拍照后指定的图片路径
     private Uri imgUri;
-    private String imgPath;
+    private String newAvatarPath;
 
     private Scheduler uiThread = AndroidSchedulers.mainThread();
     private Scheduler backgroundThread = Schedulers.io();
     private PersonalInfoPresenter presenter;
     private UserBean mUser = new UserBean();
+
+    //根据处理结果返回的图片路径显示图片
+    private Subscriber<String> showImageSubscriber = new Subscriber<String>() {
+        @Override
+        public void onCompleted() {
+
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            ToastUtil.show("图片路径解析错误");
+        }
+
+        @Override
+        public void onNext(String imagePath) {
+            displayImage(imagePath);
+        }
+    };
 
     public static void start(final Context context){
         Intent intent = new Intent(context, PersonalInfoActivity.class);
@@ -101,14 +110,19 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
         setContentView(R.layout.activity_personal_info);
         initView();
         setEvenListener();
-        presenter = new PersonalInfoPresenter(uiThread, backgroundThread);
-        presenter.attachView(this);
+        photoUtils = new PhotoUtils(this);
+        presenter = new PersonalInfoPresenter(this, uiThread, backgroundThread);
         presenter.onCreate();
+        presenter.attachView(this);
         fetchData();
     }
 
     private void initView(){
-        initToolbar();
+//        initToolbar();
+        back = (ImageView) findViewById(R.id.back);
+        ((TextView)findViewById(R.id.title_name)).setText(R.string.my_information);
+        saveChange = (TextView) findViewById(R.id.operation);
+        saveChange.setText(R.string.save);
         avatarLayout = (RelativeLayout) findViewById(R.id.avatar_layout);
         avatarView = (RoundImageView) findViewById(R.id.avatar);
         nicknameLayout = (LinearLayout) findViewById(R.id.nickname_layout);
@@ -123,24 +137,27 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
         logout = (TextView) findViewById(R.id.logout);
     }
 
-    private void initToolbar(){
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(getString(R.string.my_information));
-        toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
-        toolbar.setNavigationIcon(R.drawable.back);
-        setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent data = new Intent();
-                data.putExtra("user", mUser);
-                setResult(RESULT_OK, data);
-                finish();
-            }
-        });
-    }
+//    private void initToolbar(){
+//        toolbar = (Toolbar) findViewById(R.id.toolbar);
+//        saveChange = (TextView) toolbar.findViewById(R.id.save);
+//        toolbar.setTitle(getString(R.string.my_information));
+//        toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
+//        toolbar.setNavigationIcon(R.drawable.back);
+//        setSupportActionBar(toolbar);
+//        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent data = new Intent();
+//                data.putExtra("user", mUser);
+//                setResult(RESULT_OK, data);
+//                finish();
+//            }
+//        });
+//    }
 
     private void setEvenListener() {
+        back.setOnClickListener(this);
+        saveChange.setOnClickListener(this);
         avatarLayout.setOnClickListener(this);
         nicknameLayout.setOnClickListener(this);
         emailLayout.setOnClickListener(this);
@@ -167,7 +184,7 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
     @Override
     public void showData(UserBean userBean) {
         if (userBean != null){
-//            avatarView.setImageResource();
+//            displayImage(userBean.getImagePath());
             nickname.setText(userBean.getUsername());
             email.setText(userBean.getEmail());
             growth.setText(userBean.getGrowthValue());
@@ -182,11 +199,20 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
     @Override
     public void onClick(View v) {
         switch (v.getId()){
+            case R.id.back:
+                Intent data = new Intent();
+                data.putExtra("user", mUser);
+                setResult(RESULT_OK, data);
+                finish();
+                break;
+            case R.id.operation:
+                ToastUtil.show("save");
+                break;
             case R.id.avatar_layout:
                 showChoosePictureDialog();
                 break;
             case R.id.nickname_layout:
-
+                showModifyNicknameDialog();
                 break;
             case R.id.email_layout:
 
@@ -210,16 +236,16 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 switch (which){
-                    case FROM_ALBUM:
+                    case PhotoUtils.FROM_ALBUM:
                         if (isAllowOpenAlbum){
-                            openAlbum();
+                            presenter.openAlbum();
                         } else {
                             ToastUtil.show(getString(R.string.request_storage_tip));
                         }
                         break;
-                    case TAKE_PHOTO:
+                    case PhotoUtils.TAKE_PHOTO:
                         if (isAllowOpenCamera){
-                            openCamera();
+                            imgUri = presenter.openCamera(avatarName);
                         } else {
                             ToastUtil.show(getString(R.string.request_camera_tip));
                         }
@@ -235,52 +261,19 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
         builder.show();
     }
 
-    private void openAlbum(){
-        //4.4及以上版本，TODO 4.4以下待测试
-        Intent openAlbum = new Intent(Intent.ACTION_PICK);
-        //Intent openAlbum = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        //Intent openAlbum = new Intent(Intent.ACTION_GET_CONTENT);
-        openAlbum.setType("image/*");
-        if (openAlbum.resolveActivity(getPackageManager()) != null){
-            startActivityForResult(openAlbum, FROM_ALBUM);
-        } else {
-            ToastUtil.show(getString(R.string.no_album));
-        }
-    }
-
-    private void openCamera(){
-        Intent openCamera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (openCamera.resolveActivity(getPackageManager()) != null){
-            File outputImg = new File(Environment.getExternalStorageDirectory(), avatarName);
-            imgUri = Uri.fromFile(outputImg);
-            openCamera.putExtra(MediaStore.EXTRA_OUTPUT, imgUri);
-            startActivityForResult(openCamera, TAKE_PHOTO);
-        }else {
-            ToastUtil.show(getString(R.string.no_camera));
-        }
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
-                case TAKE_PHOTO:
-                    cropPicture(imgUri);
+                case PhotoUtils.TAKE_PHOTO:
+                    presenter.cropPicture(imgUri);
                     break;
-                case FROM_ALBUM:
-                    //判断手机系统版本号
-                    if (Build.VERSION.SDK_INT>=19) {
-                        //4.4及以上
-                        handleImageOnKitKat(data);
-                    } else {
-                        handleImageBeforeKitKat(data);
-                    }
+                case PhotoUtils.FROM_ALBUM:
+                    presenter.handleAlbumPicture(data.getData(), showImageSubscriber);
                     break;
-                case CROP_PICTURE:
-                    if (data != null){
-                        handlePicture(data);
-                    }
+                case PhotoUtils.CROP_PICTURE:
+                    presenter.handleCropPicture(imgUri, avatarName, showImageSubscriber);
                     break;
                 default:
                     break;
@@ -288,108 +281,82 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
         }
     }
 
-    /**
-     * 裁剪图片
-     */
-    private void cropPicture(Uri uri){
-        imgUri = uri;
-        Intent intent = new Intent("com.android.camera.action.CROP");
-        intent.setDataAndType(uri, "image/*");
-        intent.putExtra("crop", "true");
-        //设置裁剪比例
-        intent.putExtra("aspectX", 1);
-        intent.putExtra("aspectY", 1);
-        //intent.putExtra("scale", true);
-        intent.putExtra("return-data", false);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imgUri);
-        startActivityForResult(intent, CROP_PICTURE);
-    }
-
-    @TargetApi(19)
-    private void handleImageOnKitKat(Intent data){
-        String imagePath = null;
-        Uri uri = data.getData();
-        if (DocumentsContract.isDocumentUri(this, uri)) {
-            //如果是document类型的Uri，则通过document id处理
-            String docId = DocumentsContract.getDocumentId(uri);
-            if ("com.android.providers.media.documents".equals(uri.getAuthority())) {
-                String id = docId.split(":")[1];
-                String selection = MediaStore.Images.Media._ID+"="+id;
-                imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                        selection);
-            } else if ("com.android.providers.downloads.documents".equals(uri
-                    .getAuthority())) {
-                Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://" +
-                        "downloads/public_downloads"),Long.valueOf(docId));
-                imagePath = getImagePath(contentUri,null);
-            }
-        } else if (ContentResolver.SCHEME_CONTENT.equalsIgnoreCase(uri.getScheme())) {
-            //如果是content类型，则使用普通方式处理
-            imagePath = getImagePath(uri,null);
-        } else if (ContentResolver.SCHEME_FILE.equals(uri.getScheme())) {
-            // 如果是file类型, 则直接获取
-            imagePath = uri.getPath();
-        } else {
-            imagePath = getImagePath(uri,null);
-        }
-        displayImage(imagePath);
-    }
-
-    /**
-     * API19以下的手机处理方法
-     */
-    private void handleImageBeforeKitKat(Intent data) {
-        Uri uri = data.getData();
-        String imagePath = getImagePath(uri,null);
-        displayImage(imagePath);
-    }
-
-    /**
-     * 裁剪完图片后进行处理，如显示到屏幕、保存到本地、上传到服务器
-     */
-    private void handlePicture(Intent data){
-//        Bitmap photo = null;
-//        try {
-//            photo = BitmapFactory.decodeStream(getContentResolver().openInputStream(imgUri));
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//        PhotoUtils photoUtils = new PhotoUtils(this);
-//        if (photo != null) {
-//            imgPath = photoUtils.savePhoto(photo, Environment.getExternalStorageDirectory()
-//                    .getAbsolutePath()+ "/" + getString(R.string.app_name) + "/image", FACE_IMG_NAME);
-//            displayImage(imgPath);
-//            tempImagePath = imgPath;
-//        }
-    }
-
-    private String getImagePath(Uri uri, String selection) {
-        if (uri == null) {
-            return null;
-        }
-        String path = null;
-        String[] filePathColumn = {MediaStore.MediaColumns.DATA};
-        //通过Uri和selection来获取真实的图片路径
-        Cursor cursor = getContentResolver().query(uri, filePathColumn, selection, null, null);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-            }
-            cursor.close();
-        }
-        return path;
-    }
-
-    private void displayImage(String imagePath) {
+    public void displayImage(String imagePath) {
         if (imagePath != null) {
-            imgPath = imagePath;
-//            Bitmap bitmap = PhotoUtils.getSpecifiedBitmap(imagePath, imageWidth, imageHeight);
-//            avatarView.setImageBitmap(bitmap);
-//            tempImagePath = imagePath;
-//            updateUserInfo();
+            Bitmap bitmap = photoUtils.getSpecifiedBitmap(imagePath, AVATAR_WITH, AVATAR_HEIGHT);
+            avatarView.setImageBitmap(bitmap);
+            newAvatarPath = imagePath;
+            updateUserInfo();
         } else {
-            ToastUtil.shortShow(getString(R.string.no_camera));
+            avatarView.setImageResource(R.drawable.default_user_image);
+            ToastUtil.shortShow("找不到头像");
         }
+    }
+
+    private void showModifyNicknameDialog(){
+//        final String[] newNickname = new String[1];
+//        LayoutInflater layoutInflater = PersonalInfoActivity.this.getLayoutInflater();
+//        final View editNickname = layoutInflater.inflate(R.layout.modify_nickname, null);
+//            AlertDialog dialog = new AlertDialog.Builder(this)
+//                    .setTitle(getString(R.string.change_nickname))
+//                    .setView(editNickname)
+//                    .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            EditText editNewName = (EditText) editNickname.findViewById(R.id.new_nickname);
+//                            newNickname[1] = editNewName.getText().toString().trim();
+//                            if (newNickname[1].length() < 3){
+//                                editNewName.setError(getString(R.string.username_wrong_length));
+//                            }
+//                        }
+//                    })
+//                    .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            dialog.dismiss();
+//                        }
+//                    }).create();
+//            dialog.show();
+        final EditDialog dialog = new EditDialog(this);
+                dialog.setTitleText(R.string.change_nickname)
+                .setListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (v.getId() == R.id.cancel_button){
+                            ToastUtil.show("click cancel");
+                        } else {
+                            ToastUtil.show("click yes");
+                        }
+                        dialog.dismiss();
+                    }
+                })
+                .show();
+    }
+
+    /**
+     * 更新本地头像路径以及上传头像至服务器
+     */
+    protected void updateUserInfo(){
+//        if (newAvatarPath != null && !newAvatarPath.equals(user.getImagePath())){
+//            user.setImagePath(newAvatarPath);
+//            isChange = true;
+//            UploadAsyncTask uploadAsyncTask = new UploadAsyncTask(this);
+//            uploadAsyncTask.execute(tempImagePath, user.getEmail());
+//            uploadAsyncTask.setAsyncResponse(new AsyncResponse() {
+//                @Override
+//                public void onDataReceivedSuccess(List<String> list) {
+//                    Toast.makeText(PersonalInfoActivity.this, list.get(0),Toast.LENGTH_LONG ).show();
+//                }
+//
+//                public void onDataReceivedFailed() {
+//                    Toast.makeText(PersonalInfoActivity.this, getString(R.string.upload_failed),Toast.LENGTH_LONG ).show();
+//                }
+//            });
+//        }
+//        if (isChange){
+//            Global.userInfoDB.update(user);
+//            isChange = false;
+//        }
     }
 
     @Override

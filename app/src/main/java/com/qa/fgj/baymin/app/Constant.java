@@ -3,6 +3,9 @@ package com.qa.fgj.baymin.app;
 import android.content.Context;
 import android.os.Environment;
 
+import com.qa.fgj.baymin.R;
+import com.qa.fgj.baymin.util.Global;
+
 import java.io.File;
 
 /**
@@ -20,9 +23,9 @@ public class Constant {
     public static final String PATH_CACHE = PATH_DATA + "/NetCache";
 
     public static final String PATH_SDCARD = Environment.getExternalStorageDirectory()
-            .getAbsolutePath() + File.separator + "baymin";
+            .getAbsolutePath() + File.separator + Global.appContext.getString(R.string.app_name);
 
-
+    public static final String PATH_IMAGE = PATH_SDCARD + "/image";
 
 
 }

@@ -6,14 +6,34 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
+    <!--<android.support.v7.widget.Toolbar-->
+        <!--android:id="@+id/toolbar"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:background="@color/white"-->
+        <!--app:popupTheme="@style/AppTheme.PopupOverlay"-->
+        <!--app:theme="@style/Widget.AppCompat.ActionBar"-->
+        <!--android:fitsSystemWindows="true" >-->
+        <!--<RelativeLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:paddingEnd="15dp">-->
+            <!--<TextView-->
+                <!--android:id="@+id/save"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_alignParentEnd="true"-->
+                <!--android:textSize="14sp"-->
+                <!--android:text="@string/save"/>-->
+        <!--</RelativeLayout>-->
+    <!--</android.support.v7.widget.Toolbar>-->
+
+    <include layout="@layout/title_common" />
+
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/main_color"
-        app:popupTheme="@style/AppTheme.PopupOverlay"
-        app:theme="@style/Widget.AppCompat.ActionBar"
-        android:fitsSystemWindows="true" />
+        android:layout_height="10dp"
+        android:background="@color/background"/>
 
     <RelativeLayout
         android:id="@+id/avatar_layout"
@@ -30,7 +50,8 @@
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:layout_marginEnd="10dp"
-            android:text="头   像：" />
+            android:textColor="@color/text_normal_color"
+            android:text="头     像：" />
 
         <com.qa.fgj.baymin.widget.RoundImageView
             android:id="@+id/avatar"
@@ -50,7 +71,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/gray" />
+        android:background="@color/background" />
 
     <LinearLayout
         android:id="@+id/nickname_layout"
@@ -66,7 +87,8 @@
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:layout_marginEnd="10dp"
-            android:text="昵    称：" />
+            android:textColor="@color/text_normal_color"
+            android:text="昵      称：" />
 
         <TextView
             android:id="@+id/nickname"
@@ -75,6 +97,7 @@
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:ellipsize="end"
+            android:textColor="@color/black"
             tools:text="小小白" />
 
         <ImageView
@@ -87,7 +110,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/gray" />
+        android:background="@color/background" />
 
     <LinearLayout
         android:id="@+id/email_layout"
@@ -98,13 +121,13 @@
         android:paddingTop="5dp"
         android:paddingBottom="5dp">
 
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:layout_marginEnd="10dp"
-            android:text="邮    箱：" />
+            android:textColor="@color/text_normal_color"
+            android:text="邮      箱：" />
 
         <TextView
             android:id="@+id/email"
@@ -113,6 +136,7 @@
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:ellipsize="end"
+            android:textColor="@color/black"
             tools:text="123@qq.com" />
 
         <ImageView
@@ -125,7 +149,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/gray" />
+        android:background="@color/background" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -140,20 +164,22 @@
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:layout_marginEnd="10dp"
-            android:text="成长值：" />
+            android:textColor="@color/text_normal_color"
+            android:text="成 长 值：" />
 
         <TextView
             android:id="@+id/growth"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
+            android:textColor="@color/black"
             tools:text="100" />
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/gray" />
+        android:background="@color/background" />
 
     <LinearLayout
         android:id="@+id/sex_layout"
@@ -169,7 +195,8 @@
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:layout_marginEnd="10dp"
-            android:text="性    别：" />
+            android:textColor="@color/text_normal_color"
+            android:text="性      别：" />
 
         <RadioGroup
             android:id="@+id/sex_group"
@@ -195,14 +222,12 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="10dp"
-        android:background="@color/gray" />
+        android:background="@color/background" />
 
     <RelativeLayout
         android:id="@+id/modify_password_layout"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@drawable/bg_button"
-        android:padding="5dp">
+        android:layout_height="45dp">
 
         <TextView
             android:id="@+id/modify_password"
@@ -211,11 +236,12 @@
             android:layout_marginEnd="5dp"
             android:layout_marginStart="5dp"
             android:layout_centerInParent="true"
+            android:textColor="@color/black"
             android:text="修改密码" />
 
         <ImageView
-            android:layout_width="25dp"
-            android:layout_height="25dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:layout_toStartOf="@id/modify_password"
             android:layout_centerInParent="true"
             android:src="@drawable/modify_password" />
@@ -225,18 +251,19 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="10dp"
-        android:background="@color/gray" />
+        android:background="@color/background" />
 
-    <Button
+    <TextView
         android:id="@+id/logout"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@drawable/bg_button"
+        android:layout_height="45dp"
+        android:gravity="center"
+        android:textColor="@color/black"
         android:text="@string/log_out" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/gray" />
+        android:background="@color/background" />
 
 </LinearLayout>

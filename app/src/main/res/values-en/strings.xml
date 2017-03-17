@@ -107,7 +107,7 @@
     <string name="noAccount">New to BayMin? Sign Up</string>
     <string name="remember">remember me</string>
     <string name="editInfo">Edit Your Information</string>
-    <string name="save_change">save your modify</string>
+    <string name="save">save</string>
     <string name="set_user_image">reset your face picture</string>
     <string name="synchronize_image">synchronizing your image&#8230;</string>
     <string name="upload_successfully">upload successfully</string>

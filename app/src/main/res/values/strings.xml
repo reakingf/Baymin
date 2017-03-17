@@ -107,7 +107,7 @@
     <string name="noAccount">还没有账号？注册一个</string>
     <string name="remember">记住密码？</string>
     <string name="editInfo">编辑资料</string>
-    <string name="save_change">保存修改</string>
+    <string name="save">保存</string>
     <string name="set_user_image">设置头像</string>
     <string name="synchronize_image">头像设置正在同步中&#8230;</string>
     <string name="upload_successfully">上传成功</string>
