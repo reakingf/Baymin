@@ -2,9 +2,9 @@ package com.qa.fgj.baymin.ui.activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -24,13 +24,21 @@ import com.qa.fgj.baymin.presenter.PersonalInfoPresenter;
 import com.qa.fgj.baymin.ui.view.IPersonalInfoView;
 import com.qa.fgj.baymin.util.PhotoUtils;
 import com.qa.fgj.baymin.util.ToastUtil;
-import com.qa.fgj.baymin.widget.EditDialog;
+import com.qa.fgj.baymin.widget.EditableDialog;
+import com.qa.fgj.baymin.widget.ModifyPasswordDialog;
 import com.qa.fgj.baymin.widget.RoundImageView;
+import com.qa.fgj.baymin.widget.SelectableDialog;
+import com.qa.fgj.baymin.widget.ShowTipDialog;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import rx.Scheduler;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+
+import static android.util.Patterns.EMAIL_ADDRESS;
 
 /**
  * 个人信息页
@@ -55,11 +63,15 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
     RadioGroup sexGroup;
     RadioButton sexBoy;
     RadioButton sexGirl;
-    RelativeLayout modifyPassword;
+    RelativeLayout modifyPasswordLayout;
     TextView logout;
 
-    ProgressDialog progressDialog;
-    AlertDialog.Builder builder;
+    private SelectableDialog avatarDialog;
+    private EditableDialog modifyNameDialog;
+    private EditableDialog modifyEmailDialog;
+    private ModifyPasswordDialog modifyPasswordDialog;
+    private ShowTipDialog logoutDialog;
+
     private PhotoUtils photoUtils;
     private boolean isAllowOpenAlbum = true;
     private boolean isAllowOpenCamera = true;
@@ -69,6 +81,7 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
     //存储拍照后指定的图片路径
     private Uri imgUri;
     private String newAvatarPath;
+    private boolean isChange = false;
 
     private Scheduler uiThread = AndroidSchedulers.mainThread();
     private Scheduler backgroundThread = Schedulers.io();
@@ -79,7 +92,6 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
     private Subscriber<String> showImageSubscriber = new Subscriber<String>() {
         @Override
         public void onCompleted() {
-
         }
 
         @Override
@@ -133,7 +145,7 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
         sexGroup = (RadioGroup) findViewById(R.id.sex_group);
         sexBoy = (RadioButton) findViewById(R.id.select_boy);
         sexGirl = (RadioButton) findViewById(R.id.select_girl);
-        modifyPassword = (RelativeLayout) findViewById(R.id.modify_password_layout);
+        modifyPasswordLayout = (RelativeLayout) findViewById(R.id.modify_password_layout);
         logout = (TextView) findViewById(R.id.logout);
     }
 
@@ -161,7 +173,7 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
         avatarLayout.setOnClickListener(this);
         nicknameLayout.setOnClickListener(this);
         emailLayout.setOnClickListener(this);
-        modifyPassword.setOnClickListener(this);
+        modifyPasswordLayout.setOnClickListener(this);
         logout.setOnClickListener(this);
         sexGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -169,7 +181,6 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
                 if (checkedId == R.id.select_girl){
 
                 }
-
             }
         });
     }
@@ -209,56 +220,50 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
                 ToastUtil.show("save");
                 break;
             case R.id.avatar_layout:
-                showChoosePictureDialog();
+                showSetAvatarDialog();
                 break;
             case R.id.nickname_layout:
                 showModifyNicknameDialog();
                 break;
             case R.id.email_layout:
-
+                showModifyEmailDialog();
                 break;
             case R.id.modify_password_layout:
-
+                showModifyPasswordDialog();
                 break;
             case R.id.logout:
-
+                showLogoutDialog();
                 break;
         }
     }
 
-    private void showChoosePictureDialog() {
-        builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.set_user_image);
-        String fromAlbum = getString(R.string.selectFromAlbum);
-        String takePhoto = getString(R.string.takePhoto);
-        final String[] selectItems = {fromAlbum, takePhoto};
-        builder.setItems(selectItems, new DialogInterface.OnClickListener() {
+    private void showSetAvatarDialog() {
+        avatarDialog = new SelectableDialog(this);
+        avatarDialog.setTitleText(getString(R.string.set_user_image));
+        avatarDialog.setFirstItem(getString(R.string.selectFromAlbum), new SelectableDialog.ItemClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which){
-                    case PhotoUtils.FROM_ALBUM:
-                        if (isAllowOpenAlbum){
-                            presenter.openAlbum();
-                        } else {
-                            ToastUtil.show(getString(R.string.request_storage_tip));
-                        }
-                        break;
-                    case PhotoUtils.TAKE_PHOTO:
-                        if (isAllowOpenCamera){
-                            imgUri = presenter.openCamera(avatarName);
-                        } else {
-                            ToastUtil.show(getString(R.string.request_camera_tip));
-                        }
-                        break;
+            public void onClick() {
+                if (isAllowOpenAlbum){
+                    presenter.openAlbum();
+                } else {
+                    ToastUtil.show(getString(R.string.request_storage_tip));
                 }
+                avatarDialog.dismiss();
             }
         });
-        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+        avatarDialog.setSecondItem(getString(R.string.takePhoto), new SelectableDialog.ItemClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
+            public void onClick() {
+                if (isAllowOpenCamera){
+                    imgUri = presenter.openCamera(avatarName);
+                } else {
+                    ToastUtil.show(getString(R.string.request_camera_tip));
+                }
+                avatarDialog.dismiss();
             }
         });
-        builder.show();
+//        dialog.setButton(getString(R.string.cancel), null);
+        avatarDialog.show();
     }
 
     @Override
@@ -294,43 +299,102 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
     }
 
     private void showModifyNicknameDialog(){
-//        final String[] newNickname = new String[1];
-//        LayoutInflater layoutInflater = PersonalInfoActivity.this.getLayoutInflater();
-//        final View editNickname = layoutInflater.inflate(R.layout.modify_nickname, null);
-//            AlertDialog dialog = new AlertDialog.Builder(this)
-//                    .setTitle(getString(R.string.change_nickname))
-//                    .setView(editNickname)
-//                    .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            EditText editNewName = (EditText) editNickname.findViewById(R.id.new_nickname);
-//                            newNickname[1] = editNewName.getText().toString().trim();
-//                            if (newNickname[1].length() < 3){
-//                                editNewName.setError(getString(R.string.username_wrong_length));
-//                            }
-//                        }
-//                    })
-//                    .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            dialog.dismiss();
-//                        }
-//                    }).create();
-//            dialog.show();
-        final EditDialog dialog = new EditDialog(this);
-                dialog.setTitleText(R.string.change_nickname)
-                .setListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (v.getId() == R.id.cancel_button){
-                            ToastUtil.show("click cancel");
-                        } else {
-                            ToastUtil.show("click yes");
-                        }
-                        dialog.dismiss();
-                    }
-                })
-                .show();
+        modifyNameDialog = new EditableDialog(this);
+        modifyNameDialog.setTitleText(getString(R.string.change_nickname));
+        modifyNameDialog.setEditTextHint(getString(R.string.change_nickname_hint));
+        modifyNameDialog.setPositiveButton(null, new EditableDialog.onPositiveButtonClick(){
+            @Override
+            public void onClick() {
+                if (modifyNameDialog.getEditText().length() >= 3) {
+                    changeNickName(modifyNameDialog.getEditText());
+                    modifyNameDialog.dismiss();
+                } else {
+                    modifyNameDialog.setEditTextError(getString(R.string.username_wrong_length));
+                }
+            }
+        });
+        modifyNameDialog.setNegativeButton(null, new EditableDialog.onNegativeButtonClick() {
+            @Override
+            public void onClick() {
+                modifyNameDialog.dismiss();
+            }
+        });
+        modifyNameDialog.show();
+    }
+
+    private void showModifyEmailDialog(){
+        modifyEmailDialog = new EditableDialog(this);
+        modifyEmailDialog.setTitleText(getString(R.string.change_email));
+        modifyEmailDialog.setEditTextHint(getString(R.string.change_email_hint));
+        modifyEmailDialog.setPositiveButton(null, new EditableDialog.onPositiveButtonClick(){
+            @Override
+            public void onClick() {
+                if (EMAIL_ADDRESS.matcher(modifyEmailDialog.getEditText()).matches()) {
+                    changeEmail(modifyEmailDialog.getEditText());
+                    modifyEmailDialog.dismiss();
+                } else {
+                    modifyEmailDialog.setEditTextError(getString(R.string.wrong_email));
+                }
+            }
+        });
+        modifyEmailDialog.setNegativeButton(null, new EditableDialog.onNegativeButtonClick() {
+            @Override
+            public void onClick() {
+                modifyEmailDialog.dismiss();
+            }
+        });
+        modifyEmailDialog.show();
+    }
+
+    private void showModifyPasswordDialog(){
+        modifyPasswordDialog = new ModifyPasswordDialog(this);
+        modifyPasswordDialog.setTitleText(getString(R.string.change_password));
+        modifyPasswordDialog.setPositiveButton(getString(R.string.yes), new ModifyPasswordDialog.onPositiveButtonClick() {
+            @Override
+            public void onClick() {
+                String srcPassword = modifyPasswordDialog.getSrcPassword();
+                String newPassword = modifyPasswordDialog.getNewPassword();
+                String confirmPassword = modifyPasswordDialog.getConfirmPassword();
+                modifyPasswordLayout(modifyPasswordDialog, srcPassword, newPassword, confirmPassword);
+            }
+        });
+        modifyPasswordDialog.setNegativeButton(getString(R.string.cancel), new ModifyPasswordDialog.onNegativeButtonClick() {
+            @Override
+            public void onClick() {
+                modifyPasswordDialog.dismiss();
+            }
+        });
+        modifyPasswordDialog.show();
+    }
+
+    private void changeNickName(String newName){
+        if (newName != null && !nickname.getText().toString().equals(newName)){
+            nickname.setText(newName);
+            isChange = true;
+        }
+    }
+
+    private void changeEmail(String newEmail){
+        if (newEmail != null && !email.getText().toString().equals(newEmail)){
+            email.setText(newEmail);
+            isChange = true;
+        }
+    }
+
+    private void modifyPasswordLayout(ModifyPasswordDialog dialog, String srcPassword,
+                                      String newPassword, String confirmPassword) {
+        if (!validatePassword(srcPassword)){
+            dialog.setSrcPasswordError(getString(R.string.psw_wrong_length));
+        } else if (!validatePassword(newPassword)){
+            dialog.setNewPasswordError(getString(R.string.psw_wrong_length));
+        } else if (!newPassword.equals(confirmPassword)){
+            dialog.setConfirmPasswordError(getString(R.string.wrong_to_confirm_psw));
+        }
+        // TODO: 2017/3/18 验证原密码
+    }
+
+    private boolean validatePassword(String password) {
+        return password != null && password.length() >= 6 && password.length() <= 20;
     }
 
     /**
@@ -359,6 +423,26 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
 //        }
     }
 
+    private void showLogoutDialog() {
+        logoutDialog = new ShowTipDialog(this);
+        logoutDialog.setTitleText("提示信息");
+        logoutDialog.setContentText(getString(R.string.log_out));
+        logoutDialog.setPositiveButton(getString(R.string.yes), new ShowTipDialog.onPositiveButtonClick() {
+            @Override
+            public void onClick() {
+                presenter.logout();
+                logoutDialog.dismiss();
+            }
+        });
+        logoutDialog.setNegativeButton(getString(R.string.cancel), new ShowTipDialog.onNegativeButtonClick() {
+            @Override
+            public void onClick() {
+                logoutDialog.dismiss();
+            }
+        });
+        logoutDialog.show();
+    }
+
     @Override
     public void showError(String msg) {
 
@@ -369,9 +453,20 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
 
     }
 
+    private void destroyDialog(Dialog dialog){
+        if (dialog != null && dialog.isShowing()){
+            dialog.dismiss();
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        destroyDialog(avatarDialog);
+        destroyDialog(modifyNameDialog);
+        destroyDialog(modifyEmailDialog);
+        destroyDialog(modifyPasswordDialog);
+        destroyDialog(logoutDialog);
         presenter.detachView();
         presenter.onDestroy();
     }

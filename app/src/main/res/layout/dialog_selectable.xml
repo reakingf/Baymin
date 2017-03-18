@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/title_tip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:textColor="@color/text_normal_color"
+        android:textSize="@dimen/tip_size"
+        tools:text="标题"/>
+
+    <TextView
+        android:id="@+id/firstText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:textSize="@dimen/tip_size"
+        android:textColor="@color/titleBackground"
+        tools:text="第一个选项"/>
+
+    <TextView
+        android:id="@+id/secondText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:textSize="@dimen/tip_size"
+        android:textColor="@color/titleBackground"
+        tools:text="第二个选项"/>
+
+    <TextView
+        android:id="@+id/sigleButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:paddingTop="10dp"
+        android:paddingBottom="20dp"
+        android:textSize="@dimen/tip_size"
+        android:textColor="@color/orange"
+        android:text="取消"/>
+
+</LinearLayout>

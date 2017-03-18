@@ -1,10 +1,8 @@
 package com.qa.fgj.baymin.ui.activity;
 
-import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.ContextCompat;
@@ -35,6 +33,8 @@ import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.LogUtil;
 import com.qa.fgj.baymin.util.ToastUtil;
 import com.qa.fgj.baymin.widget.RoundImageView;
+import com.qa.fgj.baymin.widget.SelectableDialog;
+import com.qa.fgj.baymin.widget.ShowTipDialog;
 import com.qa.fgj.baymin.widget.SpeechRecognizeDialog;
 import com.qa.fgj.baymin.widget.XListView;
 
@@ -68,7 +68,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     EditText editText;
     Button sendButton;
 
-    AlertDialog.Builder builder;
+    private SelectableDialog chooseLanguageDialog;
+    private SelectableDialog setLanguageDialog;
+    private ShowTipDialog exitDialog;
 
     private SpeechRecognizeDialog dialog;
     private List<MessageBean> listData;
@@ -184,6 +186,13 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                     }
                     // TODO: 2017/3/16 这里需要绑定对应的用户
                     presenter.fetchListData(msgID, listData.size());
+                    break;
+                case PersonalInfoActivity.REQUEST_CODE:
+                    if (!Global.isLogin){
+                        loggedInLayout.setVisibility(View.GONE);
+                        withoutLoginLayout.setVisibility(View.VISIBLE);
+                        initListViewData(null);
+                    }
                     break;
                 case RESULT_OK:
                     //语音识别成功后获取语音的文本形式内容的回调接口
@@ -301,8 +310,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        switch (id) {
+        switch (item.getItemId()) {
             case R.id.setVoiceLanguage:
                 setVoiceLanguage();
                 break;
@@ -323,10 +331,10 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
 //                updateManager.isUpdate();
                 break;
             case R.id.setLanguage:
-//                setSystemLanguage();
+                setSystemLanguage();
                 break;
             case R.id.exit:
-//                setExitApp();
+                setExitApp();
                 break;
         }
 //        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -340,23 +348,27 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
      * 设置语音输入类型
      */
     public void setVoiceLanguage() {
-        builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.setVoiceLanguageTitle);
-        final String[] languageTypes = {"普通话(中国)", "English(United State)"};
-        builder.setItems(languageTypes, new DialogInterface.OnClickListener() {
+        chooseLanguageDialog = new SelectableDialog(this);
+        chooseLanguageDialog.setTitleText(getString(R.string.setVoiceLanguageTitle));
+        chooseLanguageDialog.setFirstItem("普通话(中国)", new SelectableDialog.ItemClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-//                config.setCurrentLanguage(which);
-                String tips = getResources().getString(R.string.currentLanguage) + languageTypes[which];
+            public void onClick() {
+                //config.setCurrentLanguage(0);
+                String tips = getResources().getString(R.string.currentLanguage) + "普通话(中国)";
                 ToastUtil.show(tips);
+                chooseLanguageDialog.dismiss();
             }
         });
-        builder.setNegativeButton(R.string.back, new DialogInterface.OnClickListener() {
+        chooseLanguageDialog.setSecondItem("English(United State)", new SelectableDialog.ItemClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
+            public void onClick() {
+                //config.setCurrentLanguage(1);
+                String tips = getResources().getString(R.string.currentLanguage) + "English(United State)";
+                ToastUtil.show(tips);
+                chooseLanguageDialog.dismiss();
             }
         });
-        builder.show();
+        chooseLanguageDialog.show();
     }
 
     @Override
@@ -521,9 +533,82 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
 
     }
 
+    /**
+     * 设置系统语言
+     */
+    public void setSystemLanguage() {
+        setLanguageDialog = new SelectableDialog(this);
+        setLanguageDialog.setTitleText(getString(R.string.setLanguage));
+        setLanguageDialog.setFirstItem("中文(简体)", new SelectableDialog.ItemClickListener() {
+            @Override
+            public void onClick() {
+//                setEditor = setConfig.edit();
+//                if (which == 0){
+//                    configuration.locale = Locale.CHINA;
+//                    currentLanguage = "CHINA";
+//                    setEditor.putString("language", currentLanguage);
+//                }else {
+//                    configuration.locale = Locale.ENGLISH;
+//                    currentLanguage = "ENGLISH";
+//                    setEditor.putString("language", currentLanguage);
+//                }
+//                getResources().updateConfiguration(configuration, getBaseContext().getResources().getDisplayMetrics());
+//                boolean ok = setEditor.commit();
+//                if (ok){
+//                    Intent intent = getIntent();
+//                    finish();
+//                    startActivity(intent);
+//                }else {
+//                    String tip = getResources().getString(R.string.changeFail) + languages[which];
+//                    Toast.makeText(MainActivity.this, tip, Toast.LENGTH_SHORT).show();
+//                }
+                setLanguageDialog.dismiss();
+            }
+        });
+        setLanguageDialog.setSecondItem("English", new SelectableDialog.ItemClickListener() {
+            @Override
+            public void onClick() {
+                setLanguageDialog.dismiss();
+            }
+        });
+        setLanguageDialog.show();
+    }
+
+    /**
+     * 关闭应用程序
+     */
+    public void setExitApp() {
+        exitDialog = new ShowTipDialog(this);
+        exitDialog.setTitleText("提示信息");
+        exitDialog.setContentText(getString(R.string.exit_hint));
+        exitDialog.setPositiveButton(getString(R.string.yes), new ShowTipDialog.onPositiveButtonClick() {
+            @Override
+            public void onClick() {
+                exitDialog.dismiss();
+                System.exit(0);
+            }
+        });
+        exitDialog.setNegativeButton(getString(R.string.cancel), new ShowTipDialog.onNegativeButtonClick() {
+            @Override
+            public void onClick() {
+                exitDialog.dismiss();
+            }
+        });
+        exitDialog.show();
+    }
+
+    private void destroyDialog(Dialog dialog){
+        if (dialog != null && dialog.isShowing()){
+            dialog.dismiss();
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        destroyDialog(chooseLanguageDialog);
+        destroyDialog(setLanguageDialog);
+        destroyDialog(exitDialog);
         presenter.detachView();
         presenter.onDestroy();
     }

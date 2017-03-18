@@ -1,12 +1,15 @@
 package com.qa.fgj.baymin.presenter;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.PersonalModel;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.ui.view.IPersonalInfoView;
+import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.PhotoUtils;
 import com.qa.fgj.baymin.util.ToastUtil;
 
@@ -16,6 +19,9 @@ import java.util.List;
 import rx.Scheduler;
 import rx.Subscriber;
 import rx.Subscription;
+
+import static android.app.Activity.RESULT_OK;
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by FangGengjia on 2017/2/19.
@@ -102,6 +108,18 @@ public class PersonalInfoPresenter<T extends IPersonalInfoView> implements IBase
         subscriptionList.add(subscription);
     }
 
+    public void logout() {
+        SharedPreferences sp = activity.getSharedPreferences("loginInfo", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putBoolean("isRemember", false);
+        editor.apply();
+        Global.isLogin = false;
+        Intent data = new Intent();
+        data.putExtra("logout", true);
+        activity.setResult(RESULT_OK, data);
+        activity.finish();
+    }
+
     @Override
     public void detachView() {
         view = null;
@@ -118,4 +136,5 @@ public class PersonalInfoPresenter<T extends IPersonalInfoView> implements IBase
         }
 
     }
+
 }

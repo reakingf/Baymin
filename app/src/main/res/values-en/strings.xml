@@ -95,8 +95,10 @@
     <string name="login">Login</string>
     <string name="nickname">NickName</string>
     <string name="change_nickname">modify nickname</string>
-    <string name="change_nickname_hint">new nickname</string>
+    <string name="change_nickname_hint">input your new nickname</string>
     <string name="email">Email</string>
+    <string name="change_email">modify email</string>
+    <string name="change_email_hint">input your new email</string>
     <string name="verify_password_hint">please input your original password</string>
     <string name="password">Password</string>
     <string name="src_password">original password</string>

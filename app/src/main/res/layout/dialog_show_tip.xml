@@ -6,35 +6,33 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/title_tip"
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="20dp"
+        android:paddingBottom="10dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:textColor="@color/text_normal_color"
+        tools:text="标题"/>
+
+    <TextView
+        android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:paddingTop="20dp"
-        android:paddingBottom="20dp"
-        android:textColor="@color/text_normal_color"
+        android:padding="10dp"
         android:textSize="@dimen/tip_size"
-        tools:text="请输入你要更改的新昵称"/>
-
-    <android.support.design.widget.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingStart="25dp"
-        android:paddingEnd="25dp">
-        <EditText
-            android:id="@+id/edit_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/text_normal_color"
-            android:textSize="@dimen/tip_size"/>
-    </android.support.design.widget.TextInputLayout>
+        android:textColor="@color/titleBackground"
+        tools:text="提示信息"/>
 
     <RelativeLayout
+        android:id="@+id/double_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingStart="50dp"
         android:paddingEnd="50dp"
-        android:paddingTop="20dp"
+        android:paddingTop="10dp"
         android:paddingBottom="20dp">
 
         <TextView
@@ -55,5 +53,18 @@
             android:text="@string/yes"/>
 
     </RelativeLayout>
+
+    <TextView
+        android:id="@+id/single_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_horizontal"
+        android:paddingTop="10dp"
+        android:paddingBottom="20dp"
+        android:textColor="@color/orange"
+        android:textSize="@dimen/tip_size"
+        android:text="@string/back"
+        android:visibility="gone"/>
 
 </LinearLayout>

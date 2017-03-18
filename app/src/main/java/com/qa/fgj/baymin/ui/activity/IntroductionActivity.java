@@ -1,12 +1,11 @@
 package com.qa.fgj.baymin.ui.activity;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -16,6 +15,8 @@ import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.BaseActivity;
 import com.qa.fgj.baymin.presenter.IntroductionPresenter;
 import com.qa.fgj.baymin.ui.view.IIntroductionView;
+import com.qa.fgj.baymin.util.ToastUtil;
+import com.qa.fgj.baymin.widget.ShowTipDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +49,7 @@ public class IntroductionActivity extends BaseActivity implements IIntroductionV
 
     ArrayAdapter<String> adapter;
     private List<String> list = new ArrayList<>();
-    private AlertDialog.Builder dialog;
+    private ShowTipDialog dialog;
     private List<String> introInfo = new ArrayList<>();
 
     IntroductionPresenter presenter;
@@ -79,19 +80,14 @@ public class IntroductionActivity extends BaseActivity implements IIntroductionV
         bindData();
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, list);
         listView.setAdapter(adapter);
-        dialog = new AlertDialog.Builder(this);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                dialog.setTitle(list.get(position));
-                dialog.setMessage(introInfo.get(position));
-                dialog.setCancelable(true);
-                dialog.setNegativeButton(getString(R.string.back), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                    }
-                });
+                dialog = new ShowTipDialog(IntroductionActivity.this);
+                dialog.setTitleText(list.get(position));
+                dialog.setContentGravity(Gravity.LEFT);
+                dialog.setContentText(introInfo.get(position));
+                dialog.setSingleButton(true);
                 dialog.show();
             }
         });
@@ -143,6 +139,9 @@ public class IntroductionActivity extends BaseActivity implements IIntroductionV
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (dialog != null && dialog.isShowing()){
+            dialog.dismiss();
+        }
         presenter.detachView();
         presenter.onDestroy();
     }
