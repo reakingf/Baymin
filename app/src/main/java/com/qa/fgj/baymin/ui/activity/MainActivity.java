@@ -607,7 +607,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         exitDialog = new ShowTipDialog(this);
         exitDialog.setTitleText("提示信息");
         exitDialog.setContentText(getString(R.string.exit_hint));
-        exitDialog.setPositiveButton(getString(R.string.yes), new ShowTipDialog.onPositiveButtonClick() {
+        exitDialog.setPositiveButton(getString(R.string.ok), new ShowTipDialog.onPositiveButtonClick() {
             @Override
             public void onClick() {
                 exitDialog.dismiss();

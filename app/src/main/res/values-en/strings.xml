@@ -4,6 +4,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="welcome_tip">welcome.</string>
     <string name="exit_tip">press again to exit BayMin</string>
+    <string name="tip">Tip</string>
     <string name="speak">click for speaking</string>
     <string name="send">send</string>
     <string name="back">Back</string>
@@ -22,7 +23,7 @@
     <string name="exit">Exit</string>
     <string name="cancel">Cancel</string>
     <string name="close">close</string>
-    <string name="startup">start</string>
+    <string name="startup">startup</string>
     <string name="new_version">detecting a new version:&#160; </string>
     <string name="update">update</string>
     <string name="version_updating">updating</string>
@@ -147,7 +148,7 @@
     <string name="no_album">didn\'t find any picture viewer</string>
     <string name="no_camera">Unable to start camera</string>
     <string name="failed_to_get_image">failed to get image</string>
-    <string name="yes">yes</string>
+    <string name="ok">Yes</string>
     <string name="request_microphone_tip">allow baymin to open microphone permission to use voice communication function</string>
     <string name="request_phone_tips">allow baymin to open read phone state to avoid the impact of voice communication while phone call in or call out</string>
     <string name="request_storage_tip">allow baymin to open read storage permission to use music player and set your personal image</string>

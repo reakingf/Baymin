@@ -17,8 +17,12 @@ import com.qa.fgj.baymin.net.RestApiService;
 import com.qa.fgj.baymin.util.Global;
 import com.squareup.leakcanary.LeakCanary;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+
+import retrofit2.http.Field;
 
 /**
  * Created by FangGengjia on 2017/1/19.
@@ -56,6 +60,11 @@ public class App extends Application {
         super.onCreate();
 //        instance = this;
         Global.appContext = getApplicationContext();
+
+        File appField = new File(Constant.PATH_APP);
+        if (!appField.exists()){
+            appField.mkdir();
+        }
 
         //初始化数据库
         Global.initDB();

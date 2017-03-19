@@ -47,6 +47,6 @@
         android:paddingBottom="20dp"
         android:textSize="@dimen/tip_size"
         android:textColor="@color/orange"
-        android:text="取消"/>
+        android:text="@string/cancel"/>
 
 </LinearLayout>

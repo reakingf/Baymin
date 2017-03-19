@@ -5,6 +5,7 @@ import com.qa.fgj.baymin.model.entity.UserBean;
 
 import retrofit2.http.Body;
 import retrofit2.http.Field;
+import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -19,26 +20,38 @@ import rx.Observable;
 public interface PersonalInfoApi {
 
     @FormUrlEncoded
-    @POST("BayMinServlet/RegisterServlet")
+    @POST("BayMinServlet/Register")
     Observable<BayMinResponse<UserBean>> register(
             @Field("nickname") String nickname,
             @Field("email") String email,
             @Field("password") String password);
 
     @FormUrlEncoded
-    @POST("BayMinServlet/LoginServlet")
+    @POST("BayMinServlet/Login")
     Observable<BayMinResponse<UserBean>> login(
             @Field("email") String email,
             @Field("password") String password);
 
-    @GET("")
+    @GET("BayMinServlet/userInfo")
     Observable<BayMinResponse<UserBean>> getUserInfo(
             @Query("email") String email);
 
     @FormUrlEncoded
-    @POST("")
+    @POST("BayMinServlet/userInfo")
     Observable<BayMinResponse> postNewAvatar(
 
     );
 
+    @FormUrlEncoded
+    @POST("BayMinServlet/userInfo")
+    Observable<BayMinResponse> changePassword(
+            @Field("srcPassword") String srcPassword,
+            @Field("newPassword") String newPassword
+//            @Field("action") String action
+    );
+
+    @FormUrlEncoded
+    @POST("BayMinServlet/userInfo")
+    Observable<BayMinResponse> synUserInfo(
+            @Body UserBean user);
 }

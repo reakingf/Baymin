@@ -4,6 +4,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="welcome_tip">你好，欢迎使用小白问答。</string>
     <string name="exit_tip">再按一次将退出小白问答</string>
+    <string name="tip">提示信息</string>
     <string name="speak">点击后说话</string>
     <string name="send">发送</string>
     <string name="back">返回</string>
@@ -147,7 +148,9 @@
     <string name="no_album">未找到图片查看器</string>
     <string name="no_camera">无法启动相机</string>
     <string name="failed_to_get_image">获取图片失败</string>
-    <string name="yes">确定</string>
+    <string name="ok">确定</string>
+    <string name="yes">是</string>
+    <string name="no">否</string>
     <string name="request_microphone_tip">为了使用语音交流，请允许小白打开麦克风权限，进行录音或合成</string>
     <string name="request_phone_tips">为了避免语音交流影响到通话，请允许小白打开监听通话状态（来电、通话中、去电）权限</string>
     <string name="request_storage_tip">为了能够使用音乐播放和设置个人头像功能，请允许小白打开本机外部存储权限，扫描本机音乐，打开本机相册</string>

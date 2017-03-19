@@ -53,7 +53,6 @@ public class PhotoUtils {
     }
 
     public void openAlbum(){
-        //4.4及以上版本，TODO 4.4以下待测试
         Intent openAlbum = new Intent(Intent.ACTION_PICK);
         //Intent openAlbum = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         //Intent openAlbum = new Intent(Intent.ACTION_GET_CONTENT);
@@ -65,11 +64,11 @@ public class PhotoUtils {
         }
     }
 
-    public Uri openCamera(String photoName){
+    public Uri openCamera(){
         Uri imgUri = null;
         Intent openCamera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (openCamera.resolveActivity(activity.getPackageManager()) != null){
-                File outputImg = new File(Constant.PATH_IMAGE, photoName);
+            File outputImg = new File(Constant.PATH_IMAGE, String.valueOf(System.currentTimeMillis()));
             imgUri = Uri.fromFile(outputImg);
             //由于这里指定了输出路径，导致在onActivityResult中的intent参数为null，若不指定则会有默认路径
             openCamera.putExtra(MediaStore.EXTRA_OUTPUT, imgUri);
@@ -145,7 +144,7 @@ public class PhotoUtils {
     /**
      * 处理裁剪后的图片
      */
-    public Observable<String> handleCropPicture(Uri imgUri, String imgName){
+    public Observable<String> handleCropPicture(Uri imgUri){
         Bitmap photo = null;
         String imgPath = null;
         try {
@@ -154,6 +153,7 @@ public class PhotoUtils {
             e.printStackTrace();
         }
         if (photo != null) {
+            String imgName = MD5Util.getMD5Digest(String.valueOf(System.currentTimeMillis()));
             imgPath = savePhoto(photo, Environment.getExternalStorageDirectory()
                     .getAbsolutePath()+ "/" + activity.getString(R.string.app_name) + "/image", imgName);
         }

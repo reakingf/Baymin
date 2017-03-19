@@ -79,6 +79,8 @@ public class EditableDialog extends BaseDialog {
             public void onClick(View v) {
                 if (negativeClickListener != null){
                     negativeClickListener.onClick();
+                } else {
+                    EditableDialog.this.dismiss();
                 }
             }
         });
@@ -88,6 +90,8 @@ public class EditableDialog extends BaseDialog {
             public void onClick(View v) {
                 if (positiveClickListener != null){
                     positiveClickListener.onClick();
+                } else {
+                    EditableDialog.this.dismiss();
                 }
             }
         });

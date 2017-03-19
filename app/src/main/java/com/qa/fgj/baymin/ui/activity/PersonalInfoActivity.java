@@ -1,9 +1,7 @@
 package com.qa.fgj.baymin.ui.activity;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -19,6 +17,7 @@ import android.widget.TextView;
 
 import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.BaseActivity;
+import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.presenter.PersonalInfoPresenter;
 import com.qa.fgj.baymin.ui.view.IPersonalInfoView;
@@ -29,9 +28,6 @@ import com.qa.fgj.baymin.widget.ModifyPasswordDialog;
 import com.qa.fgj.baymin.widget.RoundImageView;
 import com.qa.fgj.baymin.widget.SelectableDialog;
 import com.qa.fgj.baymin.widget.ShowTipDialog;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import rx.Scheduler;
 import rx.Subscriber;
@@ -75,18 +71,18 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
     private PhotoUtils photoUtils;
     private boolean isAllowOpenAlbum = true;
     private boolean isAllowOpenCamera = true;
-    private String avatarName;
+//    private String avatarName;
     private static final int AVATAR_WITH = 100;
     private static final int AVATAR_HEIGHT = 100;
     //存储拍照后指定的图片路径
     private Uri imgUri;
     private String newAvatarPath;
-    private boolean isChange = false;
 
     private Scheduler uiThread = AndroidSchedulers.mainThread();
     private Scheduler backgroundThread = Schedulers.io();
     private PersonalInfoPresenter presenter;
-    private UserBean mUser = new UserBean();
+    //用于缓存本地数据库的用户资料
+    private UserBean latestUser;
 
     //根据处理结果返回的图片路径显示图片
     private Subscriber<String> showImageSubscriber = new Subscriber<String>() {
@@ -160,7 +156,7 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
 //            @Override
 //            public void onClick(View v) {
 //                Intent data = new Intent();
-//                data.putExtra("user", mUser);
+//                data.putExtra("user", latestUser);
 //                setResult(RESULT_OK, data);
 //                finish();
 //            }
@@ -175,34 +171,27 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
         emailLayout.setOnClickListener(this);
         modifyPasswordLayout.setOnClickListener(this);
         logout.setOnClickListener(this);
-        sexGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (checkedId == R.id.select_girl){
-
-                }
-            }
-        });
     }
 
     private void fetchData(){
         Intent intent = getIntent();
         String account = intent.getStringExtra("account");
-        avatarName = account + ".jpg";
+//        avatarName = account + ".jpg";
         presenter.fetchData(account);
     }
 
     @Override
     public void showData(UserBean userBean) {
         if (userBean != null){
+            latestUser = userBean;
 //            displayImage(userBean.getImagePath());
             nickname.setText(userBean.getUsername());
             email.setText(userBean.getEmail());
             growth.setText(userBean.getGrowthValue());
-            if ("男".equals(userBean.getSex())){
-                sexBoy.setChecked(true);
-            } else {
+            if ("女".equals(userBean.getSex())){
                 sexGirl.setChecked(true);
+            } else {
+                sexBoy.setChecked(true);
             }
         }
     }
@@ -212,12 +201,12 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
         switch (v.getId()){
             case R.id.back:
                 Intent data = new Intent();
-                data.putExtra("user", mUser);
+                data.putExtra("user", latestUser);
                 setResult(RESULT_OK, data);
                 finish();
                 break;
             case R.id.operation:
-                ToastUtil.show("save");
+                updateUserInfo();
                 break;
             case R.id.avatar_layout:
                 showSetAvatarDialog();
@@ -255,14 +244,13 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
             @Override
             public void onClick() {
                 if (isAllowOpenCamera){
-                    imgUri = presenter.openCamera(avatarName);
+                    imgUri = presenter.openCamera();
                 } else {
                     ToastUtil.show(getString(R.string.request_camera_tip));
                 }
                 avatarDialog.dismiss();
             }
         });
-//        dialog.setButton(getString(R.string.cancel), null);
         avatarDialog.show();
     }
 
@@ -278,7 +266,7 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
                     presenter.handleAlbumPicture(data.getData(), showImageSubscriber);
                     break;
                 case PhotoUtils.CROP_PICTURE:
-                    presenter.handleCropPicture(imgUri, avatarName, showImageSubscriber);
+                    presenter.handleCropPicture(imgUri, showImageSubscriber);
                     break;
                 default:
                     break;
@@ -291,7 +279,6 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
             Bitmap bitmap = photoUtils.getSpecifiedBitmap(imagePath, AVATAR_WITH, AVATAR_HEIGHT);
             avatarView.setImageBitmap(bitmap);
             newAvatarPath = imagePath;
-            updateUserInfo();
         } else {
             avatarView.setImageResource(R.drawable.default_user_image);
             ToastUtil.shortShow("找不到头像");
@@ -313,12 +300,6 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
                 }
             }
         });
-        modifyNameDialog.setNegativeButton(null, new EditableDialog.onNegativeButtonClick() {
-            @Override
-            public void onClick() {
-                modifyNameDialog.dismiss();
-            }
-        });
         modifyNameDialog.show();
     }
 
@@ -337,25 +318,19 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
                 }
             }
         });
-        modifyEmailDialog.setNegativeButton(null, new EditableDialog.onNegativeButtonClick() {
-            @Override
-            public void onClick() {
-                modifyEmailDialog.dismiss();
-            }
-        });
         modifyEmailDialog.show();
     }
 
     private void showModifyPasswordDialog(){
         modifyPasswordDialog = new ModifyPasswordDialog(this);
         modifyPasswordDialog.setTitleText(getString(R.string.change_password));
-        modifyPasswordDialog.setPositiveButton(getString(R.string.yes), new ModifyPasswordDialog.onPositiveButtonClick() {
+        modifyPasswordDialog.setPositiveButton(getString(R.string.ok), new ModifyPasswordDialog.onPositiveButtonClick() {
             @Override
             public void onClick() {
                 String srcPassword = modifyPasswordDialog.getSrcPassword();
                 String newPassword = modifyPasswordDialog.getNewPassword();
                 String confirmPassword = modifyPasswordDialog.getConfirmPassword();
-                modifyPasswordLayout(modifyPasswordDialog, srcPassword, newPassword, confirmPassword);
+                modifyPasswordLayout(srcPassword, newPassword, confirmPassword);
             }
         });
         modifyPasswordDialog.setNegativeButton(getString(R.string.cancel), new ModifyPasswordDialog.onNegativeButtonClick() {
@@ -368,66 +343,113 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
     }
 
     private void changeNickName(String newName){
-        if (newName != null && !nickname.getText().toString().equals(newName)){
+        if (!newName.equals(nickname.getText())){
             nickname.setText(newName);
-            isChange = true;
         }
     }
 
     private void changeEmail(String newEmail){
-        if (newEmail != null && !email.getText().toString().equals(newEmail)){
+        if (!newEmail.equals(email.getText())){
             email.setText(newEmail);
-            isChange = true;
         }
     }
 
-    private void modifyPasswordLayout(ModifyPasswordDialog dialog, String srcPassword,
-                                      String newPassword, String confirmPassword) {
+    private void modifyPasswordLayout(String srcPassword, final String newPassword, String confirmPassword) {
         if (!validatePassword(srcPassword)){
-            dialog.setSrcPasswordError(getString(R.string.psw_wrong_length));
+            modifyPasswordDialog.setSrcPasswordError(getString(R.string.psw_wrong_length));
         } else if (!validatePassword(newPassword)){
-            dialog.setNewPasswordError(getString(R.string.psw_wrong_length));
+            modifyPasswordDialog.setNewPasswordError(getString(R.string.psw_wrong_length));
         } else if (!newPassword.equals(confirmPassword)){
-            dialog.setConfirmPasswordError(getString(R.string.wrong_to_confirm_psw));
+            modifyPasswordDialog.setConfirmPasswordError(getString(R.string.wrong_to_confirm_psw));
+        } else {
+            Subscriber<BayMinResponse> subscriber = new Subscriber<BayMinResponse>() {
+                @Override
+                public void onCompleted() {
+
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                    ToastUtil.shortShow(e.getMessage() == null ? "数据解析错误" : e.getMessage());
+                }
+
+                @Override
+                public void onNext(BayMinResponse response) {
+                    if (!response.isSucceed()){
+                        ToastUtil.shortShow(response.getMessage());
+                    } else {
+                        modifyPasswordDialog.dismiss();
+                        latestUser.setPassword(newPassword);
+                        presenter.updateLocalUser(latestUser);
+                        ToastUtil.shortShow("密码修改成功");
+                    }
+                }
+            };
+            presenter.changePassword(srcPassword, newPassword, subscriber);
         }
-        // TODO: 2017/3/18 验证原密码
     }
 
     private boolean validatePassword(String password) {
         return password != null && password.length() >= 6 && password.length() <= 20;
     }
 
-    /**
-     * 更新本地头像路径以及上传头像至服务器
-     */
     protected void updateUserInfo(){
-//        if (newAvatarPath != null && !newAvatarPath.equals(user.getImagePath())){
-//            user.setImagePath(newAvatarPath);
-//            isChange = true;
-//            UploadAsyncTask uploadAsyncTask = new UploadAsyncTask(this);
-//            uploadAsyncTask.execute(tempImagePath, user.getEmail());
-//            uploadAsyncTask.setAsyncResponse(new AsyncResponse() {
-//                @Override
-//                public void onDataReceivedSuccess(List<String> list) {
-//                    Toast.makeText(PersonalInfoActivity.this, list.get(0),Toast.LENGTH_LONG ).show();
-//                }
-//
-//                public void onDataReceivedFailed() {
-//                    Toast.makeText(PersonalInfoActivity.this, getString(R.string.upload_failed),Toast.LENGTH_LONG ).show();
-//                }
-//            });
-//        }
-//        if (isChange){
-//            Global.userInfoDB.update(user);
-//            isChange = false;
-//        }
+        String sex = sexGroup.getCheckedRadioButtonId() == R.id.select_girl ? "女" : "男";
+        boolean isChange = false;
+        if (!newAvatarPath.equals(latestUser.getImagePath())){
+            latestUser.setImagePath(newAvatarPath);
+            isChange = true;
+        }
+
+        if (!nickname.getText().equals(latestUser.getUsername())){
+            latestUser.setUsername(nickname.getText().toString());
+            isChange = true;
+        }
+
+        if (!email.getText().equals(latestUser.getEmail())){
+            latestUser.setEmail(email.getText().toString());
+            isChange = true;
+        }
+
+        if (!sex.equals(latestUser.getSex())){
+            latestUser.setSex(sex);
+            isChange = true;
+        }
+
+        if (!isChange){
+            ToastUtil.shortShow("用户信息没有更改");
+            return;
+        }
+
+        Subscriber<BayMinResponse> subscriber = new Subscriber<BayMinResponse>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                ToastUtil.shortShow(e.getMessage() == null ? "个人信息同步失败" : e.getMessage());
+            }
+
+            @Override
+            public void onNext(BayMinResponse response) {
+                if (response.isSucceed()){
+                    ToastUtil.shortShow("个人信息修改成功");
+                } else {
+                    ToastUtil.shortShow(response.getMessage() == null ? "个人信息同步失败" : response.getMessage());
+                }
+            }
+        };
+
+        presenter.synchronizedUserInfo(latestUser, subscriber);
     }
 
     private void showLogoutDialog() {
         logoutDialog = new ShowTipDialog(this);
-        logoutDialog.setTitleText("提示信息");
+        logoutDialog.setTitleText(getString(R.string.tip));
         logoutDialog.setContentText(getString(R.string.log_out));
-        logoutDialog.setPositiveButton(getString(R.string.yes), new ShowTipDialog.onPositiveButtonClick() {
+        logoutDialog.setPositiveButton(getString(R.string.ok), new ShowTipDialog.onPositiveButtonClick() {
             @Override
             public void onClick() {
                 presenter.logout();
@@ -445,7 +467,7 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
 
     @Override
     public void showError(String msg) {
-
+        ToastUtil.shortShow(msg);
     }
 
     @Override

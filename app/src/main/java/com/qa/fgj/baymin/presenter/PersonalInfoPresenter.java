@@ -7,10 +7,12 @@ import android.net.Uri;
 
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.PersonalModel;
+import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.ui.view.IPersonalInfoView;
 import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.PhotoUtils;
+import com.qa.fgj.baymin.util.SystemUtil;
 import com.qa.fgj.baymin.util.ToastUtil;
 
 import java.util.ArrayList;
@@ -83,8 +85,8 @@ public class PersonalInfoPresenter<T extends IPersonalInfoView> implements IBase
         photoUtils.openAlbum();
     }
 
-    public Uri openCamera(String avatarName) {
-        return photoUtils.openCamera(avatarName);
+    public Uri openCamera() {
+        return photoUtils.openCamera();
     }
 
     public void cropPicture(Uri uri) {
@@ -100,11 +102,43 @@ public class PersonalInfoPresenter<T extends IPersonalInfoView> implements IBase
 
     }
 
-    public void handleCropPicture(Uri uri, String avatarName, Subscriber<String> subscriber) {
-        Subscription subscription = photoUtils.handleCropPicture(uri, avatarName)
+    public void handleCropPicture(Uri uri, Subscriber<String> subscriber) {
+        Subscription subscription = photoUtils.handleCropPicture(uri)
             .subscribeOn(backgroundThread)
             .observeOn(uiThread)
             .subscribe(subscriber);
+        subscriptionList.add(subscription);
+    }
+
+    public void changePassword(String srcPassword, String newPassword, Subscriber<BayMinResponse> subscriber) {
+        if (!SystemUtil.isNetworkConnected()){
+            view.showError("网络不可用，请检查网络");
+            return;
+        }
+        Subscription subscription = model.changePassword(srcPassword, newPassword)
+            .subscribeOn(backgroundThread)
+            .observeOn(uiThread)
+            .subscribe(subscriber);
+        subscriptionList.add(subscription);
+    }
+
+    public void updateLocalUser(UserBean userBean) {
+        model.updateLocalUser(userBean);
+    }
+
+    /**
+     * 与本地数据库和服务器同步用户信息
+     */
+    public void synchronizedUserInfo(UserBean user, Subscriber<BayMinResponse> subscriber) {
+        if (!SystemUtil.isNetworkConnected()){
+            view.showError("网络不可用，请检查网络");
+            return;
+        }
+        updateLocalUser(user);
+        Subscription subscription = model.synUserInfo(user)
+                .subscribeOn(backgroundThread)
+                .observeOn(uiThread)
+                .subscribe(subscriber);
         subscriptionList.add(subscription);
     }
 
@@ -134,7 +168,6 @@ public class PersonalInfoPresenter<T extends IPersonalInfoView> implements IBase
                 }
             }
         }
-
     }
 
 }
