@@ -1,12 +1,8 @@
 package com.qa.fgj.baymin.widget;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.view.Display;
-import android.view.Gravity;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.qa.fgj.baymin.R;
@@ -90,7 +86,7 @@ public class SelectableDialog extends BaseDialog {
         title_tv = (TextView) findViewById(R.id.title_tip);
         firstItem_tv = (TextView) findViewById(R.id.firstText);
         secondItem_tv = (TextView) findViewById(R.id.secondText);
-        cancelButton = (TextView) findViewById(R.id.sigleButton);
+        cancelButton = (TextView) findViewById(R.id.singleButton);
     }
 
     private void setViewText(){

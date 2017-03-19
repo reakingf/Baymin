@@ -7,9 +7,9 @@
             android:icon="@drawable/ic_menu_voice"
             android:title="@string/setVoiceLanguage" />
         <item
-            android:id="@+id/recognizeWakeUp"
+            android:id="@+id/continuousRecognition"
             android:icon="@drawable/continue_asr"
-            android:title="@string/wakeUp" />
+            android:title="@string/continuousRecognition" />
         <item
             android:id="@+id/helpBayMin"
             android:icon="@drawable/idea"

@@ -22,7 +22,7 @@
     <string name="exit">Exit</string>
     <string name="cancel">Cancel</string>
     <string name="close">close</string>
-    <string name="start">start</string>
+    <string name="startup">start</string>
     <string name="new_version">detecting a new version:&#160; </string>
     <string name="update">update</string>
     <string name="version_updating">updating</string>
@@ -79,12 +79,14 @@
     <string name="call_finish">phone call is over，music: &#160;</string>
     <string name="isCompleted">the song is already played completely, do you want to play next song?</string>
     <string name="setLanguage">Set System Language</string>
-    <string name="changeFail">Fial to Change System Language, please do it again</string>
+    <string name="changeFail">Fail to Change System Language, please do it again</string>
     <string name="setVoiceLanguage">Type of Voice Input</string>
     <string name="setVoiceLanguageTitle">Set the type of voice input</string>
     <string name="currentLanguage">Current language is &#160;</string>
-    <string name="isStartWakeUp">Start voice wakeup?</string>
+    <string name="isStartWakeUp">to startup voice wakeup?</string>
     <string name="wakeUp">Voice Wakeup</string>
+    <string name="isContinueRecognition"> to startup continue recognition?</string>
+    <string name="continuousRecognition">Continuous Recognition</string>
     <string name="helpBayMin">Help BayMin to learn more</string>
     <string name="setBackground">Set Chatting Background</string>
     <string name="introduction">Introduction</string>

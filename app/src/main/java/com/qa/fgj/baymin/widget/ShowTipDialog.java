@@ -2,8 +2,8 @@ package com.qa.fgj.baymin.widget;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -18,7 +18,7 @@ public class ShowTipDialog extends BaseDialog {
 
     private TextView title_tv;
     private TextView content_tv;
-    private RelativeLayout doubleButtonLayout;
+    private LinearLayout doubleButtonLayout;
     private TextView negativeButton;
     private TextView positiveButton;
     private TextView singleButton;
@@ -58,7 +58,7 @@ public class ShowTipDialog extends BaseDialog {
     private void initView(){
         title_tv = (TextView) findViewById(R.id.title);
         content_tv = (TextView) findViewById(R.id.content);
-        doubleButtonLayout = (RelativeLayout) findViewById(R.id.double_button);
+        doubleButtonLayout = (LinearLayout) findViewById(R.id.double_button);
         negativeButton = (TextView) findViewById(R.id.cancel_button);
         positiveButton = (TextView) findViewById(R.id.yes_button);
         singleButton = (TextView) findViewById(R.id.single_button);

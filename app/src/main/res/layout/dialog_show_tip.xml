@@ -26,33 +26,35 @@
         android:textColor="@color/titleBackground"
         tools:text="提示信息"/>
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/double_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="50dp"
-        android:paddingEnd="50dp"
+        android:orientation="horizontal"
         android:paddingTop="10dp"
         android:paddingBottom="20dp">
 
         <TextView
             android:id="@+id/cancel_button"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
             android:textColor="@color/text_normal_color"
             android:textSize="@dimen/tip_size"
             android:text="@string/cancel"/>
 
         <TextView
             android:id="@+id/yes_button"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
             android:textColor="@color/orange"
             android:textSize="@dimen/tip_size"
             android:text="@string/yes"/>
 
-    </RelativeLayout>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/single_button"

@@ -69,6 +69,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     Button sendButton;
 
     private SelectableDialog chooseLanguageDialog;
+    private ShowTipDialog continuousRecogDialog;
     private SelectableDialog setLanguageDialog;
     private ShowTipDialog exitDialog;
 
@@ -314,8 +315,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
             case R.id.setVoiceLanguage:
                 setVoiceLanguage();
                 break;
-            case R.id.recognizeWakeUp:
-//                setASRWakeUp();
+            case R.id.continuousRecognition:
+                setContinuousRecognition();
                 break;
             case R.id.helpBayMin:
                 AdviseQAActivity.start(this);
@@ -369,6 +370,31 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
             }
         });
         chooseLanguageDialog.show();
+    }
+
+    private void setContinuousRecognition(){
+        continuousRecogDialog = new ShowTipDialog(this);
+        continuousRecogDialog.setTitleText(getString(R.string.continuousRecognition));
+        continuousRecogDialog.setContentText(getString(R.string.isContinueRecognition));
+        continuousRecogDialog.setPositiveButton(getString(R.string.startup),
+                new ShowTipDialog.onPositiveButtonClick() {
+                    @Override
+                    public void onClick() {
+                        // TODO: 2017/3/19 启动连续识别
+                        continuousRecogDialog.dismiss();
+                        ToastUtil.show("连续识别已启动，可在在这里关闭或通过“关闭识别”命令要求小白自动关闭");
+                    }
+                });
+        continuousRecogDialog.setNegativeButton(getString(R.string.close),
+                new ShowTipDialog.onNegativeButtonClick() {
+                    @Override
+                    public void onClick() {
+                        // TODO: 2017/3/19 关闭连续识别
+                        continuousRecogDialog.dismiss();
+                        ToastUtil.show("连续识别已关闭，可在在这里重新启动或通过“小白你好”命令唤醒小白并自动启动连续识别");
+                    }
+                });
+        continuousRecogDialog.show();
     }
 
     @Override
@@ -607,6 +633,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     protected void onDestroy() {
         super.onDestroy();
         destroyDialog(chooseLanguageDialog);
+        destroyDialog(continuousRecogDialog);
         destroyDialog(setLanguageDialog);
         destroyDialog(exitDialog);
         presenter.detachView();
