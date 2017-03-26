@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 
 import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.model.CommunicationModel;
+import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.presenter.CommunicationPresenter;
 import com.qa.fgj.baymin.ui.view.ICommunicationView;
@@ -219,7 +220,7 @@ public class CommunicationFragment extends Fragment implements
             final MessageBean sendMsg = new MessageBean(question, MessageBean.TYPE_SEND, System.currentTimeMillis());
             listData.add(sendMsg);
             adapter.notifyDataSetChanged();
-            Subscriber subscriber = new Subscriber<MessageBean>() {
+            Subscriber subscriber = new Subscriber<BayMinResponse<String>>() {
                 @Override
                 public void onCompleted() {
 
@@ -240,7 +241,7 @@ public class CommunicationFragment extends Fragment implements
                 }
 
                 @Override
-                public void onNext(MessageBean messageBean) {
+                public void onNext(BayMinResponse<String> response) {
                     LogUtil.d("onNext");
                     sendMsg.isSending = false;
                     sendMsg.isSendSuccessful = true;
@@ -248,9 +249,12 @@ public class CommunicationFragment extends Fragment implements
                     listData.add(sendMsg);
                     presenter.save(sendMsg);
 
-                    MessageBean respondMsg = messageBean;
-                    listData.add(messageBean);
-                    presenter.save(messageBean);
+                    MessageBean respondMsg = new MessageBean();
+                    respondMsg.setContent(respondMsg.getContent());
+                    respondMsg.setCreateTime(System.currentTimeMillis());
+                    respondMsg.isSendMsg =false;
+                    listData.add(respondMsg);
+                    presenter.save(respondMsg);
                     //todo 语音合成答案
                     adapter.notifyDataSetChanged();
                 }

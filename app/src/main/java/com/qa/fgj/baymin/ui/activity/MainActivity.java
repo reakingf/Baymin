@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.base.BaseActivity;
+import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.presenter.MainPresenter;
@@ -181,9 +182,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         if (resultCode == RESULT_OK){
             switch (requestCode){
                 case LoginActivity.REQUEST_CODE:
-                    UserBean user = (UserBean) data.getSerializableExtra("user");
-                    if (user != null) {
-                        updateHeaderLayout(user);
+                    UserBean logingUser = (UserBean) data.getSerializableExtra("user");
+                    if (logingUser != null) {
+                        updateHeaderLayout(logingUser);
                     }
                     // TODO: 2017/3/16 这里需要绑定对应的用户
                     presenter.fetchListData(msgID, listData.size());
@@ -193,6 +194,10 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                         loggedInLayout.setVisibility(View.GONE);
                         withoutLoginLayout.setVisibility(View.VISIBLE);
                         initListViewData(null);
+                    } else {
+                        UserBean changeUser = (UserBean) data.getSerializableExtra("user");
+                        if (changeUser != null)
+                            updateHeaderLayout(changeUser);
                     }
                     break;
                 case RESULT_OK:
@@ -202,7 +207,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         }
     }
 
-    private void updateHeaderLayout(UserBean user) {
+    private void  updateHeaderLayout(UserBean user) {
         if (!Global.isLogin){
             loggedInLayout.setVisibility(View.GONE);
             withoutLoginLayout.setVisibility(View.VISIBLE);
@@ -470,7 +475,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
             final MessageBean sendMsg = new MessageBean(question, MessageBean.TYPE_SEND, System.currentTimeMillis());
             listData.add(sendMsg);
             adapter.notifyDataSetChanged();
-            Subscriber subscriber = new Subscriber<MessageBean>() {
+            Subscriber<BayMinResponse<String>> subscriber = new Subscriber<BayMinResponse<String>>() {
                 @Override
                 public void onCompleted() {
                 }
@@ -479,7 +484,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                 public void onError(Throwable e) {
 //                    listData.get(0).isSendSuccessful = false;
 //                    listData.get(0).isSending = false;
-                    LogUtil.d("onError: " + e.getMessage());
+                    ToastUtil.shortShow(e.getMessage() == null ? "发送失败" : e.getMessage());
                     sendMsg.isSending = false;
                     sendMsg.isSendSuccessful = false;
                     listData.remove(listData.size() - 1);
@@ -490,18 +495,27 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                 }
 
                 @Override
-                public void onNext(MessageBean messageBean) {
-                    LogUtil.d("onNext");
-                    sendMsg.isSending = false;
-                    sendMsg.isSendSuccessful = true;
-                    listData.remove(listData.size() - 1);
-                    listData.add(sendMsg);
-                    presenter.save(sendMsg);
+                public void onNext(BayMinResponse<String> response) {
+                    if (!response.isSucceed()){
+                        ToastUtil.shortShow(response.getMessage() == null ? "发送失败" : response.getMessage());
+                    } else {
+                        sendMsg.isSending = false;
+                        sendMsg.isSendSuccessful = true;
+                        listData.remove(listData.size() - 1);
+                        listData.add(sendMsg);
+                        presenter.save(sendMsg);
 
-                    listData.add(messageBean);
-                    presenter.save(messageBean);
-                    //todo 语音合成答案
-                    adapter.notifyDataSetChanged();
+                        MessageBean messageBean = new MessageBean();
+                        messageBean.isSending = false;
+                        messageBean.isSendSuccessful = true;
+                        messageBean.isSendMsg = false;
+                        messageBean.setContent(response.getContent());
+                        messageBean.setCreateTime(System.currentTimeMillis());
+                        listData.add(messageBean);
+                        presenter.save(messageBean);
+                        //todo 语音合成答案
+                        adapter.notifyDataSetChanged();
+                    }
                 }
             };
             presenter.getAnswer(question, subscriber);

@@ -11,6 +11,12 @@ public class BayMinResponse<T> {
     private String message;
     private T content;
 
+    public void setSucceed(boolean succeed) {
+        isSucceed = succeed;
+    }
+
+    private long createTime;
+
     public int getCode() {
         return code;
     }
@@ -41,6 +47,14 @@ public class BayMinResponse<T> {
 
     public void setContent(T content) {
         this.content = content;
+    }
+
+    public long getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(long createTime) {
+        this.createTime = createTime;
     }
 
     @Override

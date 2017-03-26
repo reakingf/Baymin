@@ -1,6 +1,5 @@
 package com.qa.fgj.baymin.app;
 
-import android.content.Context;
 import android.os.Environment;
 
 import com.qa.fgj.baymin.R;
@@ -28,5 +27,6 @@ public class Constant {
 
     public static final String PATH_IMAGE = PATH_SDCARD + "/image";
 
+    public static final String APP_TOKEN = "ASDDSKKK19990SDDDSS";
 
 }

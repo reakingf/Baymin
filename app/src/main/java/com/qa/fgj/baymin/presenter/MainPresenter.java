@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.MainModel;
+import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.ui.view.IMainView;
 import com.qa.fgj.baymin.util.LogUtil;
@@ -88,7 +89,7 @@ public class MainPresenter<T extends IMainView> implements IBasePresenter<T> {
         subscriptionList.add(subscription);
     }
 
-    public void getAnswer(String question, Subscriber<MessageBean> subscriber){
+    public void getAnswer(String question, Subscriber<BayMinResponse<String>> subscriber){
         Subscription subscription = mModel.getAnswer(question)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(uiThread)

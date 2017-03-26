@@ -2,6 +2,7 @@ package com.qa.fgj.baymin.presenter;
 
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.CommunicationModel;
+import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.ui.view.ICommunicationView;
 
@@ -62,7 +63,7 @@ public class CommunicationPresenter<T extends ICommunicationView> implements IBa
             .subscribe(subscriber);
     }
 
-    public void getAnswer(String question, Subscriber<MessageBean> subscriber){
+    public void getAnswer(String question, Subscriber<BayMinResponse<String>> subscriber){
         mModel.getAnswer(question)
             .observeOn(notifier)
             .subscribeOn(executor)

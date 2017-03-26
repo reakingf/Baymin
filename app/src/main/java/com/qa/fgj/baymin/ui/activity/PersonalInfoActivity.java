@@ -21,6 +21,7 @@ import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.presenter.PersonalInfoPresenter;
 import com.qa.fgj.baymin.ui.view.IPersonalInfoView;
+import com.qa.fgj.baymin.util.LogUtil;
 import com.qa.fgj.baymin.util.PhotoUtils;
 import com.qa.fgj.baymin.util.ToastUtil;
 import com.qa.fgj.baymin.widget.EditableDialog;
@@ -184,7 +185,7 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
     public void showData(UserBean userBean) {
         if (userBean != null){
             latestUser = userBean;
-//            displayImage(userBean.getImagePath());
+            displayImage(userBean.getImagePath());
             nickname.setText(userBean.getUsername());
             email.setText(userBean.getEmail());
             growth.setText(userBean.getGrowthValue());
@@ -193,6 +194,8 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
             } else {
                 sexBoy.setChecked(true);
             }
+        } else {
+            LogUtil.d("latestUser == null");
         }
     }
 
@@ -277,8 +280,10 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
     public void displayImage(String imagePath) {
         if (imagePath != null) {
             Bitmap bitmap = photoUtils.getSpecifiedBitmap(imagePath, AVATAR_WITH, AVATAR_HEIGHT);
-            avatarView.setImageBitmap(bitmap);
-            newAvatarPath = imagePath;
+            if (bitmap != null){
+                avatarView.setImageBitmap(bitmap);
+                newAvatarPath = imagePath;
+            }
         } else {
             avatarView.setImageResource(R.drawable.default_user_image);
             ToastUtil.shortShow("找不到头像");

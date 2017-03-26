@@ -2,6 +2,7 @@ package com.qa.fgj.baymin.model;
 
 import android.content.Context;
 
+import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.net.RestApiService;
 import com.qa.fgj.baymin.net.api.CommunicationApi;
@@ -38,7 +39,7 @@ public class MainModel {
         return Observable.just(shouldLogin);
     }
 
-    public Observable<MessageBean> getAnswer(String question){
+    public Observable<BayMinResponse<String>> getAnswer(String question){
         return communicationApi.getRespond(question);
     }
 

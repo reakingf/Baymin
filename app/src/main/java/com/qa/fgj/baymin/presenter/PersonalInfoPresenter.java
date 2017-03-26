@@ -134,8 +134,12 @@ public class PersonalInfoPresenter<T extends IPersonalInfoView> implements IBase
             view.showError("网络不可用，请检查网络");
             return;
         }
+        if (user == null){
+            return;
+        }
         updateLocalUser(user);
-        Subscription subscription = model.synUserInfo(user)
+        Global.userInfoDB.save(user);
+        Subscription subscription = model.updateUser(user)
                 .subscribeOn(backgroundThread)
                 .observeOn(uiThread)
                 .subscribe(subscriber);
