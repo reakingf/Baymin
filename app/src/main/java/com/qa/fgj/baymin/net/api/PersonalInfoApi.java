@@ -7,6 +7,7 @@ import java.util.List;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FieldMap;
@@ -16,6 +17,7 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Query;
+import retrofit2.http.Url;
 import rx.Observable;
 
 /**
@@ -38,18 +40,15 @@ public interface PersonalInfoApi {
             @Field("email") String email,
             @Field("password") String password);
 
-    @GET("BayMinServlet/userInfo")
-    Observable<BayMinResponse<UserBean>> getUserInfo(
-            @Query("email") String email);
-
+    //修改密码
     @FormUrlEncoded
     @POST("BayMinServlet/userInfo")
     Observable<BayMinResponse> changePassword(
             @Field("srcPassword") String srcPassword,
             @Field("newPassword") String newPassword
-//            @Field("action") String action
     );
 
+    //更改除密码外的用户信息，包括头像、用户昵称、邮箱、性别
     @Multipart
     @POST("BayMinServlet/upload")
     Observable<BayMinResponse> updateUser(
@@ -58,5 +57,8 @@ public interface PersonalInfoApi {
             @Part("email") RequestBody email,
             @Part("sex") RequestBody sex);
 
+    //下载头像
+    @GET("BayMinServlet/Download")
+    Observable<ResponseBody> downLoadAvatar(@Query("email") String email);
 
 }

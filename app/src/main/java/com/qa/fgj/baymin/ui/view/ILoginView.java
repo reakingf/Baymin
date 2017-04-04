@@ -15,7 +15,7 @@ public interface ILoginView extends IBaseView {
 
     void inputPasswordError(String msg);
 
-    void showProgressDialog();
+    void showProgressDialog(String tip);
 
     void dismissProgressDialog();
 

@@ -6,6 +6,7 @@ import com.qa.fgj.baymin.net.RestApiService;
 import com.qa.fgj.baymin.net.api.PersonalInfoApi;
 import com.qa.fgj.baymin.util.Global;
 
+import okhttp3.ResponseBody;
 import rx.Observable;
 
 /**
@@ -22,6 +23,10 @@ public class LoginModel {
 
     public Observable<BayMinResponse<UserBean>> login(String email, String password){
         return personalInfoApi.login(email, password);
+    }
+
+    public Observable<ResponseBody> syncAvatar(String email){
+        return personalInfoApi.downLoadAvatar(email);
     }
 
     public UserBean getUserByEmail(String email){

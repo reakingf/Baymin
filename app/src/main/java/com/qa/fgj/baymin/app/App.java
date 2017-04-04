@@ -61,9 +61,14 @@ public class App extends Application {
 //        instance = this;
         Global.appContext = getApplicationContext();
 
-        File appField = new File(Constant.PATH_APP);
-        if (!appField.exists()){
-            appField.mkdir();
+        File appFile = new File(Constant.PATH_APP);
+        if (!appFile.exists()){
+            appFile.mkdir();
+        }
+
+        File imgFile = new File(Constant.PATH_IMAGE);
+        if (!imgFile.exists()){
+            imgFile.mkdir();
         }
 
         //初始化数据库

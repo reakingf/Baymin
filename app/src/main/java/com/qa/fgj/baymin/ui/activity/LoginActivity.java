@@ -159,15 +159,16 @@ public class LoginActivity extends BaseActivity implements ILoginView {
     }
 
     @Override
-    public void showProgressDialog(){
+    public void showProgressDialog(String tip){
         mProgressDialog.setIndeterminate(true);
-        mProgressDialog.setMessage(getString(R.string.login_validating));
+        mProgressDialog.setMessage(tip);
         mProgressDialog.show();
     }
 
     @Override
     public void dismissProgressDialog(){
-        mProgressDialog.dismiss();
+        if (mProgressDialog != null && mProgressDialog.isShowing())
+            mProgressDialog.dismiss();
     }
 
     @Override

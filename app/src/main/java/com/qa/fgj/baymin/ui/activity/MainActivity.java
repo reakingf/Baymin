@@ -3,6 +3,7 @@ package com.qa.fgj.baymin.ui.activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.ContextCompat;
@@ -32,6 +33,7 @@ import com.qa.fgj.baymin.ui.view.IMainView;
 import com.qa.fgj.baymin.ui.adapter.MsgAdapter;
 import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.LogUtil;
+import com.qa.fgj.baymin.util.PhotoUtils;
 import com.qa.fgj.baymin.util.ToastUtil;
 import com.qa.fgj.baymin.widget.RoundImageView;
 import com.qa.fgj.baymin.widget.SelectableDialog;
@@ -182,9 +184,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         if (resultCode == RESULT_OK){
             switch (requestCode){
                 case LoginActivity.REQUEST_CODE:
-                    UserBean logingUser = (UserBean) data.getSerializableExtra("user");
-                    if (logingUser != null) {
-                        updateHeaderLayout(logingUser);
+                    UserBean loginUser = (UserBean) data.getSerializableExtra("user");
+                    if (loginUser != null) {
+                        updateHeaderLayout(loginUser);
                     }
                     // TODO: 2017/3/16 这里需要绑定对应的用户
                     presenter.fetchListData(msgID, listData.size());
@@ -218,16 +220,16 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                 //TODO:暂未获取成长值和天气预报
                 String name = user.getUsername();
                 String growth = user.getGrowthValue();
-                String imgPath = null;
+                String imgPath = user.getImagePath();
                 if (name != null){
                     userName.setText(name);
                 }
-//                Bitmap bitmap = PhotoUtils.getSpecifiedBitmap(imgPath, 100, 100);
-//                if (bitmap != null){
-//                    userFace.setImageBitmap(bitmap);
-//                } else {
-//                    userFace.setImageDrawable(getResources().getDrawable(R.drawable.default_user_image));
-//                }
+                Bitmap bitmap = new PhotoUtils(this).getSpecifiedBitmap(imgPath, 100, 100);
+                if (bitmap != null){
+                    userFace.setImageBitmap(bitmap);
+                } else {
+                    userFace.setImageDrawable(getResources().getDrawable(R.drawable.default_user_image));
+                }
                 if (growth != null){
                     growthValue.setText(growth);
                 }

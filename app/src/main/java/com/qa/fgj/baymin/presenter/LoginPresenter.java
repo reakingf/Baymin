@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import com.qa.fgj.baymin.R;
+import com.qa.fgj.baymin.app.Constant;
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.LoginModel;
 import com.qa.fgj.baymin.model.entity.BayMinResponse;
@@ -15,10 +16,21 @@ import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.LogUtil;
 import com.qa.fgj.baymin.util.MD5Util;
 import com.qa.fgj.baymin.util.SystemUtil;
+import com.qa.fgj.baymin.util.ToastUtil;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import okhttp3.ResponseBody;
 import rx.Scheduler;
 import rx.Subscriber;
 import rx.Subscription;
+import rx.functions.Action0;
+import rx.functions.Func1;
 
 import static android.content.Context.MODE_PRIVATE;
 import static android.util.Patterns.EMAIL_ADDRESS;
@@ -40,7 +52,7 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
     private String mEmail;
     private String mPassword;
     private boolean mIsRemember;
-    private Subscription subscription;
+    private List<Subscription> subscriptionList = new ArrayList<>();
 
     public LoginPresenter(Context context, Scheduler uiThread, Scheduler backgroundThread) {
         this.context = context;
@@ -88,11 +100,12 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
             return;
         }
 
-        view.showProgressDialog();
-        subscription = model.login(mEmail, MD5Util.getMD5Digest(mPassword))
+        view.showProgressDialog(context.getString(R.string.login_validating));
+        Subscription subscription = model.login(mEmail, MD5Util.getMD5Digest(mPassword))
                 .subscribeOn(backgroundThread)
                 .observeOn(uiThread)
                 .subscribe(subscriber);
+        subscriptionList.add(subscription);
     }
 
 
@@ -128,7 +141,29 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
         }
     }
 
-    public void onLoginSuccess(UserBean user){
+    public void onLoginSuccess(final UserBean user){
+        Subscriber<String> subscriber = new Subscriber<String>() {
+            @Override
+            public void onCompleted() {
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                view.dismissProgressDialog();
+                ToastUtil.shortShow(e.getMessage());
+            }
+
+            @Override
+            public void onNext(String imaPath) {
+                view.dismissProgressDialog();
+                if (imaPath != null) {
+                    user.setImagePath(imaPath);
+                }
+                model.saveOrUpdateUser(user);
+                view.finishWithResult(user);
+            }
+        };
+
         try {
             Global.isLogin = true;
             UserBean localUser = model.getUserByEmail(mEmail);
@@ -136,57 +171,79 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
                 //服务器存在该用户的头像
                 if (localUser == null || localUser.getImagePath() == null){
                     //本地图片不存在，从服务器下载并返回图片保存地址
-//                   user.setImagePath(syncImage(user));
+                    syncImage(user.getEmail(), subscriber);
                 } else {
                     Bitmap bitmap = BitmapFactory.decodeFile(localUser.getImagePath());
                     if (bitmap == null){
                         //本地路径找不到图片，从服务器下载并保存到本地
-//                      user.setImagePath(syncImage(user));
+                        syncImage(user.getEmail(), subscriber);
                     } else {
                         bitmap.recycle();
                         user.setImagePath(localUser.getImagePath());
+                        model.saveOrUpdateUser(user);
+                        view.finishWithResult(user);
                     }
                 }
             }
-            model.saveOrUpdateUser(user);
-            view.finishWithResult(user);
         } catch (Exception e){
-            LogUtil.d("----exception: " + e);
+            LogUtil.d("----exception: " + e.getMessage());
         }
+
     }
 
-
     /**
-     * 同步用户头像
+     * 下载头像保存
      */
-//    public void syncImage(final UserBean user){
-//        DownloadAsyncTask downloadAsyncTask = new DownloadAsyncTask(this);
-//        downloadAsyncTask.execute(user.getEmail(), Environment.getExternalStorageDirectory()
-//                .getAbsolutePath()+"/"+getString(R.string.app_name)+"/image");
-//        downloadAsyncTask.setAsyncResponse(new AsyncResponse() {
-//            @Override
-//            public void onDataReceivedSuccess(List<String> list) {
-//                user.setImagePath(list.get(0));
-//                Global.userInfoDB.saveOrUpdate(user);
-//                Intent data = new Intent();
-//                data.putExtra("user",user);
-//                setResult(RESULT_OK, data);
-//                finish();
-//                Toast.makeText(LoginActivity.this, getString(R.string.synchronized_successfully), Toast.LENGTH_LONG ).show();
-//            }
-//
-//            @Override
-//            public void onDataReceivedFailed() {
-//                user.setImagePath(null);
-//                Global.userInfoDB.saveOrUpdate(user);
-//                Intent data = new Intent();
-//                data.putExtra("user",user);
-//                setResult(RESULT_OK, data);
-//                finish();
-//                Toast.makeText(LoginActivity.this, getString(R.string.synchronized_failed), Toast.LENGTH_LONG ).show();
-//            }
-//        });
-//    }
+    public void syncImage(String email, Subscriber<String> subscriber){
+        Subscription subscription = model.syncAvatar(email)
+                .subscribeOn(backgroundThread)
+                .doOnSubscribe(new Action0() {
+                    @Override
+                    public void call() {
+                        view.showProgressDialog("信息同步中");
+                    }
+                })
+                .subscribeOn(uiThread)
+                .observeOn(uiThread)
+                .map(new Func1<ResponseBody, String>() {
+                    @Override
+                    public String call(ResponseBody responseBody) {
+                        return downloadImage(responseBody);
+                    }
+                }).subscribe(subscriber);
+        subscriptionList.add(subscription);
+    }
+
+    // TODO: 2017/4/3 下载耗费时间极长
+    private String downloadImage(ResponseBody body) {
+        String imgPath = null;
+        try {
+            LogUtil.d("start writing image into disk");
+            InputStream in = null;
+            FileOutputStream out = null;
+            try {
+                in = body.byteStream();
+                imgPath = Constant.PATH_IMAGE + File.separator + System.currentTimeMillis() + ".jpg";
+                out = new FileOutputStream(imgPath);
+                int c;
+                while ((c = in.read()) != -1) {
+                    out.write(c);
+                }
+            } catch (IOException e) {
+                LogUtil.d(e.getMessage());
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
+                if (out != null) {
+                    out.close();
+                }
+            }
+        } catch (IOException e) {
+            LogUtil.d(e.getMessage());
+        }
+        return imgPath;
+    }
 
     @Override
     public void detachView() {
@@ -195,8 +252,12 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
 
     @Override
     public void onDestroy() {
-        if (subscription != null && !subscription.isUnsubscribed()){
-            subscription.unsubscribe();
+        if (subscriptionList != null && subscriptionList.size() > 0){
+            for (Subscription subscription : subscriptionList) {
+                if (subscription != null && !subscription.isUnsubscribed()){
+                    subscription.unsubscribe();
+                }
+            }
         }
     }
 

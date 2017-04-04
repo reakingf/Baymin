@@ -25,7 +25,7 @@ public class Constant {
 
     public static final String PATH_APP = PATH_SDCARD + File.separator + Global.appContext.getString(R.string.app_name);
 
-    public static final String PATH_IMAGE = PATH_SDCARD + "/image";
+    public static final String PATH_IMAGE = PATH_APP + "/image";
 
     public static final String APP_TOKEN = "ASDDSKKK19990SDDDSS";
 
