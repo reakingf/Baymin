@@ -18,6 +18,7 @@ import com.qa.fgj.baymin.util.MD5Util;
 import com.qa.fgj.baymin.util.SystemUtil;
 import com.qa.fgj.baymin.util.ToastUtil;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -214,34 +215,43 @@ public class LoginPresenter<T extends ILoginView> implements IBasePresenter<T> {
         subscriptionList.add(subscription);
     }
 
-    // TODO: 2017/4/3 下载耗费时间极长
     private String downloadImage(ResponseBody body) {
         String imgPath = null;
         try {
             LogUtil.d("start writing image into disk");
             InputStream in = null;
-            FileOutputStream out = null;
+            BufferedInputStream bis = null;
+            FileOutputStream fos = null;
             try {
                 in = body.byteStream();
+                bis = new BufferedInputStream(in);
+                byte[] buffer = new byte[1024];
                 imgPath = Constant.PATH_IMAGE + File.separator + System.currentTimeMillis() + ".jpg";
-                out = new FileOutputStream(imgPath);
-                int c;
-                while ((c = in.read()) != -1) {
-                    out.write(c);
+                fos = new FileOutputStream(imgPath);
+                int len;
+                while ((len = bis.read(buffer)) != -1) {
+                    fos.write(buffer, 0, len);
                 }
             } catch (IOException e) {
                 LogUtil.d(e.getMessage());
+                e.printStackTrace();
             } finally {
+                if (bis != null) {
+                    bis.close();
+                }
                 if (in != null) {
                     in.close();
                 }
-                if (out != null) {
-                    out.close();
+                if (fos != null) {
+                    fos.flush();
+                    fos.close();
                 }
             }
         } catch (IOException e) {
+            e.printStackTrace();
             LogUtil.d(e.getMessage());
         }
+        LogUtil.d("---" + imgPath);
         return imgPath;
     }
 

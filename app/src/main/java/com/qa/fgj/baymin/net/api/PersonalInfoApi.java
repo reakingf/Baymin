@@ -17,6 +17,7 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Query;
+import retrofit2.http.Streaming;
 import retrofit2.http.Url;
 import rx.Observable;
 
@@ -58,6 +59,7 @@ public interface PersonalInfoApi {
             @Part("sex") RequestBody sex);
 
     //下载头像
+//    @Streaming//用于下载大文件，意味着直接传递字节码，不需要全部读入内存
     @GET("BayMinServlet/Download")
     Observable<ResponseBody> downLoadAvatar(@Query("email") String email);
 

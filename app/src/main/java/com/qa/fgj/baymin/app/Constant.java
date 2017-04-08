@@ -29,4 +29,17 @@ public class Constant {
 
     public static final String APP_TOKEN = "ASDDSKKK19990SDDDSS";
 
+
+    //================= 标志音乐播放状态的常量 ====================
+    // 标志事件为音乐播放状态的ACTION
+    public static final String MUSIC_STATE_ACTION = "com.qa.fgj.baymin.music_state";
+    public static final String MUSIC_START = "start";
+    public static final String MUSIC_PAUSE = "pause";
+    public static final String MUSIC_CONTINUE = "continue";
+    public static final String MUSIC_STOP = "stop";
+    public static final String MUSIC_IS_COMPLETED = "completed";
+
+    /** 版本更新URL */
+    public static final String UPDATE_APP_URL = "http://202.116.195.64:8000/APP/QAChild_APP_update.xml";
+
 }

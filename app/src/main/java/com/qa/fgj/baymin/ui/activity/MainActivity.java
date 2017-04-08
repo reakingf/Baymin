@@ -32,7 +32,7 @@ import com.qa.fgj.baymin.presenter.MainPresenter;
 import com.qa.fgj.baymin.ui.view.IMainView;
 import com.qa.fgj.baymin.ui.adapter.MsgAdapter;
 import com.qa.fgj.baymin.util.Global;
-import com.qa.fgj.baymin.util.LogUtil;
+import com.qa.fgj.baymin.util.MusicManager;
 import com.qa.fgj.baymin.util.PhotoUtils;
 import com.qa.fgj.baymin.util.ToastUtil;
 import com.qa.fgj.baymin.widget.RoundImageView;
@@ -86,6 +86,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     private InputMethodManager inputMethodManager;
     private long exitTime = 0;
 
+    private MusicManager musicManager;
+
     private TextWatcher mTextWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -114,6 +116,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
+        musicManager = new MusicManager(this);
         inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         presenter = new MainPresenter(this, uiThread, backgroundThread);
         presenter.onCreate();
@@ -345,7 +348,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                 setExitApp();
                 break;
         }
-//        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer != null) {
             drawer.closeDrawer(GravityCompat.START);
         }
@@ -511,7 +514,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                         messageBean.isSending = false;
                         messageBean.isSendSuccessful = true;
                         messageBean.isSendMsg = false;
-                        messageBean.setContent(response.getContent());
+                        String message = response.getContent();
+                        message = checkCommand(message);
+                        messageBean.setContent(message);
                         messageBean.setCreateTime(System.currentTimeMillis());
                         listData.add(messageBean);
                         presenter.save(messageBean);
@@ -523,6 +528,98 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
             presenter.getAnswer(question, subscriber);
             editText.setText("");
         }
+    }
+
+//    private void startServiceIntent(String url, String msg){
+//        Intent intent = new Intent(this, MusicService.class);
+//        intent.putExtra("url", url);
+//        intent.putExtra("MSG", msg);
+//        startService(intent);
+//    }
+
+    /**
+     * 检查答复内容是否是命令指令，目前只检查语音类别指令和音乐播放处理指令
+     * @param answer 答复内容
+     * @return 检查后结果，若非命令指令则不修改答复内容，若是命令则直接执行命令并修改答复内容
+     */
+    public String checkCommand(String answer) {
+        switch (answer) {
+            case "[英文]":
+                answer = getString(R.string.change_to_English);
+//                config.setCurrentLanguage(1);
+                break;
+            case "[中文]":
+                answer = getString(R.string.change_to_Chinese);
+//                config.setCurrentLanguage(0);
+                break;
+            case "[音乐播放]":
+                if (musicManager == null){
+                    answer = getString(R.string.request_storage_tip);
+//                    permissionUtil.isPermissionGranted(Manifest.permission.READ_EXTERNAL_STORAGE, PermissionUtil.REQUEST_STORAGE_CODE,
+//                            getString(R.string.request_storage_tip));
+                } else {
+                    answer = getString(R.string.music) + musicManager.start() + getString(R.string.playing);
+                }
+                break;
+            case "[音乐暂停]":
+                if (musicManager == null){
+                    answer = getString(R.string.did_not_start_music_manager);
+                } else {
+                    answer = musicManager.pause();
+                    if ("null".equals(answer)) {
+                        answer = getString(R.string.no_music_play);
+                    } else {
+                        answer = getString(R.string.music) + answer + getString(R.string.pause);
+                    }
+                }
+                break;
+            case "[音乐继续]":
+                if (musicManager == null){
+                    answer = getString(R.string.did_not_start_music_manager);
+                } else {
+                    answer = musicManager.continues();
+                    if ("null".equals(answer)) {
+                        answer = getString(R.string.no_music_play);
+                    } else
+                        answer = getString(R.string.music) + answer + getString(R.string.continues);
+                }
+                break;
+            case "[音乐停止]":
+                if (musicManager == null){
+                    answer = getString(R.string.did_not_start_music_manager);
+                } else {
+                    answer = musicManager.stop();
+                    if ("null".equals(answer)) {
+                        answer = getString(R.string.no_music_play);
+                    } else {
+                        answer = getString(R.string.music) + answer + getString(R.string.stop);
+                    }
+                }
+                break;
+            case "[音乐下一首]":
+                if (musicManager == null){
+                    answer = getString(R.string.did_not_start_music_manager);
+                } else {
+                    answer = musicManager.nextSong();
+                    if ("null".equals(answer)) {
+                        answer = getString(R.string.music) + musicManager.start() + getString(R.string.playing);
+                    } else
+                        answer = getString(R.string.next) + musicManager.nextSong();
+                }
+                break;
+            case "[音乐上一首]":
+                if (musicManager == null){
+                    answer = getString(R.string.did_not_start_music_manager);
+                } else {
+                    answer = musicManager.previousSong();
+                    if ("null".equals(answer)) {
+                        answer = getString(R.string.music) + musicManager.start() + getString(R.string.playing);
+                    } else
+                        answer = getString(R.string.previous) + musicManager.previousSong();
+                }
+                break;
+        }
+        return answer;
     }
 
     private void startSpeechReconDialog() {
