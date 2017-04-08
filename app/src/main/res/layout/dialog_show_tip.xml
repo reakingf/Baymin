@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center_horizontal"
-            android:textColor="@color/orange"
+            android:textColor="@color/primary"
             android:textSize="@dimen/tip_size"
             android:text="@string/ok"/>
 
@@ -64,7 +64,7 @@
         android:gravity="center_horizontal"
         android:paddingTop="10dp"
         android:paddingBottom="20dp"
-        android:textColor="@color/orange"
+        android:textColor="@color/primary"
         android:textSize="@dimen/tip_size"
         android:text="@string/back"
         android:visibility="gone"/>

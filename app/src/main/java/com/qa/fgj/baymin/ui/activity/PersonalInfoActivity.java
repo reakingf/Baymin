@@ -194,8 +194,6 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
             } else {
                 sexBoy.setChecked(true);
             }
-        } else {
-            LogUtil.d("latestUser == null");
         }
     }
 
