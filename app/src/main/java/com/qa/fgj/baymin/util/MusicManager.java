@@ -47,12 +47,14 @@ public class MusicManager implements MediaPlayer.OnCompletionListener {
 
                     @Override
                     public void onError(Throwable e) {
+                        e.printStackTrace();
                         ToastUtil.shortShow("音乐播放器启动失败");
                     }
 
                     @Override
                     public void onNext(List<MusicInfo> musicInfos) {
-                        listCount = musicList.size();
+                        musicList = musicInfos;
+                        listCount = musicInfos.size();
                         if (listCount != 0){
                             firstPlay = (int) (Math.random() * listCount);
                             currentPlay = firstPlay;
