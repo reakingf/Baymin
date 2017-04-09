@@ -45,11 +45,11 @@ public class MsgAdapter extends ArrayAdapter<MessageBean>
             viewHolder.receivedContainer = (LinearLayout) view.findViewById(R.id.msg_received_container);
             viewHolder.sendContainer = (LinearLayout) view.findViewById(R.id.msg_send_container);
             viewHolder.receivedText = (TextView) view.findViewById(R.id.recevied_text);
-            viewHolder.sendState = (ImageView) view.findViewById(R.id.msg_state);
+//            viewHolder.sendState = (ImageView) view.findViewById(R.id.msg_state);
             viewHolder.sendText = (TextView) view.findViewById(R.id.send_text);
             viewHolder.userFace = (ImageView) view.findViewById(R.id.user_face_img);
             viewHolder.receivedText.setOnClickListener(this);
-            viewHolder.sendState.setOnClickListener(this);
+//            viewHolder.sendState.setOnClickListener(this);
             viewHolder.userFace.setOnClickListener(this);
 
             viewHolder.sendText.setOnLongClickListener(this);
@@ -66,10 +66,10 @@ public class MsgAdapter extends ArrayAdapter<MessageBean>
     @Override
     public void onClick(View view) {
         switch (view.getId()){
-            case R.id.msg_state:
+//            case R.id.msg_state:
                 //TODO 重发
-                ToastUtil.show("重发");
-                break;
+//                ToastUtil.show("重发");
+//                break;
             case R.id.user_face_img:
                 //TODO 进入用户信息页
                 ToastUtil.show("点击用户头像");
@@ -107,12 +107,12 @@ public class MsgAdapter extends ArrayAdapter<MessageBean>
             viewHolder.receivedContainer.setVisibility(View.GONE);
             viewHolder.sendContainer.setVisibility(View.VISIBLE);
             //默认显示发送中，发送成功隐藏该控件，发送失败将原先的圆形进度条动画改为重发图片
-            if (messageBean.isSendSuccessful){
-                viewHolder.sendState.setVisibility(View.GONE);
-            } else if (!messageBean.isSending){
-                viewHolder.sendState.setVisibility(View.VISIBLE);
-                viewHolder.sendState.setImageResource(R.drawable.send_failed);
-            }
+//            if (messageBean.isSendSuccessful){
+//                viewHolder.sendState.setVisibility(View.GONE);
+//            } else if (!messageBean.isSending){
+//                viewHolder.sendState.setVisibility(View.VISIBLE);
+//                viewHolder.sendState.setImageResource(R.drawable.send_failed);
+//            }
 //            else {
 //                viewHolder.sendState.setVisibility(View.VISIBLE);
 //                //todo 带完善
@@ -133,7 +133,7 @@ public class MsgAdapter extends ArrayAdapter<MessageBean>
         TextView receivedText;
 
         LinearLayout sendContainer;
-        ImageView sendState;
+//        ImageView sendState;
         TextView sendText;
         ImageView userFace;
     }

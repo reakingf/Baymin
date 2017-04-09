@@ -2,6 +2,8 @@ package com.qa.fgj.baymin.net;
 
 import com.google.gson.Gson;
 
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -32,6 +34,10 @@ public class BayMinHttpClientRx {
         if(writeTimeout > 0){
             httpClientBuilder.writeTimeout(writeTimeout, TimeUnit.MILLISECONDS);
         }
+
+        CookieManager cookieManager = new CookieManager();
+        cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+        httpClientBuilder.addInterceptor(new CookieInterceptor());
 
         Retrofit.Builder retrofitBuilder = new Retrofit.Builder()
                 .baseUrl(BASE_URL)

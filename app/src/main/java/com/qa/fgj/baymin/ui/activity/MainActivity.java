@@ -749,6 +749,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         destroyDialog(continuousRecogDialog);
         destroyDialog(setLanguageDialog);
         destroyDialog(exitDialog);
+        musicManager.destroyMediaPlayer();
         presenter.detachView();
         presenter.onDestroy();
     }
