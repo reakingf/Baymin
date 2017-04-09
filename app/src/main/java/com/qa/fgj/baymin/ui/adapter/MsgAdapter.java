@@ -1,6 +1,7 @@
 package com.qa.fgj.baymin.ui.adapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +14,9 @@ import android.widget.TextView;
 
 import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.model.entity.MessageBean;
+import com.qa.fgj.baymin.model.entity.UserBean;
+import com.qa.fgj.baymin.ui.activity.MainActivity;
+import com.qa.fgj.baymin.util.PhotoUtils;
 import com.qa.fgj.baymin.util.ToastUtil;
 
 import java.util.List;
@@ -23,13 +27,17 @@ import java.util.List;
  */
 
 public class MsgAdapter extends ArrayAdapter<MessageBean>
-        implements View.OnClickListener, View.OnLongClickListener{
+        implements View.OnClickListener{
 
+    private MainActivity mainActivity;
+    private UserBean userBean;
     private int resourceId;
     private MsgItemHolder viewHolder;
 
-    public MsgAdapter(Context context, int resource, List<MessageBean> data) {
+    public MsgAdapter(Context context, int resource, List<MessageBean> data, UserBean user) {
         super(context, resource, data);
+        mainActivity = (MainActivity) context;
+        userBean = user;
         resourceId = resource;
     }
 
@@ -52,7 +60,7 @@ public class MsgAdapter extends ArrayAdapter<MessageBean>
 //            viewHolder.sendState.setOnClickListener(this);
             viewHolder.userFace.setOnClickListener(this);
 
-            viewHolder.sendText.setOnLongClickListener(this);
+//            viewHolder.sendText.setOnLongClickListener(this);
 
             view.setTag(viewHolder);
         } else {
@@ -71,25 +79,24 @@ public class MsgAdapter extends ArrayAdapter<MessageBean>
 //                ToastUtil.show("重发");
 //                break;
             case R.id.user_face_img:
-                //TODO 进入用户信息页
-                ToastUtil.show("点击用户头像");
+                mainActivity.startPersonalActivity();
                 break;
         }
     }
 
-    @Override
-    public boolean onLongClick(View view) {
-        //TODO PopupWindow：复制、删除、查看更多等
-        switch (view.getId()){
-            case R.id.recevied_text:
-                ToastUtil.show("长按接收文本");
-                break;
-            case R.id.send_text:
-                ToastUtil.show("长按发送文本");
-            break;
-        }
-        return false;
-    }
+//    @Override
+//    public boolean onLongClick(View view) {
+//        //TODO PopupWindow：复制、删除、查看更多等
+//        switch (view.getId()){
+//            case R.id.recevied_text:
+//                ToastUtil.show("长按接收文本");
+//                break;
+//            case R.id.send_text:
+//                ToastUtil.show("长按发送文本");
+//            break;
+//        }
+//        return false;
+//    }
 
     private void bindData(MessageBean messageBean) {
         if (messageBean == null){
@@ -123,6 +130,24 @@ public class MsgAdapter extends ArrayAdapter<MessageBean>
             viewHolder.sendContainer.setVisibility(View.GONE);
             viewHolder.receivedContainer.setVisibility(View.VISIBLE);
             viewHolder.receivedText.setText(messageBean.getContent());
+        }
+        if (userBean != null) {
+            updateRightFaceImg(userBean.getImagePath());
+        }
+    }
+
+    /**
+     * 修改聊天界面用户头像外部接口
+     * @param imgPath 头像路径
+     */
+    public void updateRightFaceImg(String imgPath){
+        if (imgPath != null && viewHolder != null){
+            /* 头像大小 */
+            int imageWidth = 20;
+            int imageHeight = 20;
+            Bitmap bitmap = new PhotoUtils(mainActivity).getSpecifiedBitmap(imgPath, imageWidth, imageHeight);
+            if (bitmap != null)
+                viewHolder.userFace.setImageBitmap(bitmap);
         }
     }
 

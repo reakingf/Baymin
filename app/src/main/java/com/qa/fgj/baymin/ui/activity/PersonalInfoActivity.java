@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -21,7 +22,6 @@ import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.presenter.PersonalInfoPresenter;
 import com.qa.fgj.baymin.ui.view.IPersonalInfoView;
-import com.qa.fgj.baymin.util.LogUtil;
 import com.qa.fgj.baymin.util.PhotoUtils;
 import com.qa.fgj.baymin.util.ToastUtil;
 import com.qa.fgj.baymin.widget.EditableDialog;
@@ -39,6 +39,7 @@ import static android.util.Patterns.EMAIL_ADDRESS;
 
 /**
  * 个人信息页
+ * todo 存在问题：头像选择第二次无效
  * Created by FangGengjia on 2017/2/19.
  */
 
@@ -476,6 +477,17 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
     @Override
     public void useNightMode(boolean isNight) {
 
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+            Intent data = new Intent();
+            data.putExtra("user", latestUser);
+            setResult(RESULT_OK, data);
+            finish();
+        }
+        return true;
     }
 
     private void destroyDialog(Dialog dialog){

@@ -47,7 +47,6 @@
         android:id="@+id/msg_send_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="70dp"
         android:gravity="end">
 
         <!--消息发送状态，圆形进度条/重发-->
@@ -64,6 +63,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:textIsSelectable="true"
+            android:layout_marginStart="100dp"
             android:layout_marginEnd="10dp"
             android:background="@drawable/list_item_send_message"
             android:textSize="16sp"

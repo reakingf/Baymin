@@ -77,7 +77,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     private ShowTipDialog exitDialog;
 
     private SpeechRecognizeDialog dialog;
-    private List<MessageBean> listData;
+
+    UserBean mUserBean = null;
+    private List<MessageBean> listData = new ArrayList<>();
     private MsgAdapter adapter;
     /* 初始消息id */
     private String msgID = "0";
@@ -132,6 +134,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         voiceButton = (Button) findViewById(R.id.voiceButton);
         editText = (EditText) findViewById(R.id.textInput);
         sendButton = (Button) findViewById(R.id.sendButton);
+        listView = (XListView) findViewById(R.id.listContent);
         initListView();
         setListener();
     }
@@ -155,10 +158,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     }
 
     private void initListView() {
-        listView = (XListView) findViewById(R.id.listContent);
         listView.setPullLoadEnable(false);
-        listData = new ArrayList<>();
-        adapter = new MsgAdapter(this, R.layout.item_chat_list, listData);
+        adapter = new MsgAdapter(this, R.layout.item_chat_list, listData, mUserBean);
         listView.setAdapter(adapter);
         listView.setXListViewListener(this);
     }
@@ -221,6 +222,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
             loggedInLayout.setVisibility(View.VISIBLE);
             if (user != null){
                 //TODO:暂未获取成长值和天气预报
+                mUserBean = user;
                 String name = user.getUsername();
                 String growth = user.getGrowthValue();
                 String imgPath = user.getImagePath();
@@ -237,7 +239,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                     growthValue.setText(growth);
                 }
             }
-            //todo 更改聊天界面用户头像
+            initListView();
+            listView.setSelection(listView.getBottom());
         }
     }
 
@@ -438,7 +441,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                 LoginActivity.startForResult(MainActivity.this);
                 break;
             case R.id.face:
-                PersonalInfoActivity.startForResult(MainActivity.this, userName.getText().toString());
+                startPersonalActivity();
                 break;
             case R.id.temperature:
             case R.id.place:
@@ -447,6 +450,11 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
             default:
                 break;
         }
+    }
+
+    //提供给adapter调用
+    public void startPersonalActivity(){
+        PersonalInfoActivity.startForResult(MainActivity.this, userName.getText().toString());
     }
 
     /**
