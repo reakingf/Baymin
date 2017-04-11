@@ -25,6 +25,7 @@ import com.qa.fgj.baymin.ui.view.IPersonalInfoView;
 import com.qa.fgj.baymin.util.PhotoUtils;
 import com.qa.fgj.baymin.util.ToastUtil;
 import com.qa.fgj.baymin.widget.EditableDialog;
+import com.qa.fgj.baymin.widget.LoadingDialog;
 import com.qa.fgj.baymin.widget.ModifyPasswordDialog;
 import com.qa.fgj.baymin.widget.RoundImageView;
 import com.qa.fgj.baymin.widget.SelectableDialog;
@@ -69,6 +70,7 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
     private EditableDialog modifyEmailDialog;
     private ModifyPasswordDialog modifyPasswordDialog;
     private ShowTipDialog logoutDialog;
+    private LoadingDialog loadingDialog;
 
     private PhotoUtils photoUtils;
     private boolean isAllowOpenAlbum = true;
@@ -398,6 +400,9 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
     }
 
     protected void updateUserInfo(){
+        loadingDialog = new LoadingDialog(this);
+        loadingDialog.setLoadingTip("正在同步个人信息...");
+        loadingDialog.show();
         String sex = sexGroup.getCheckedRadioButtonId() == R.id.select_girl ? "女" : "男";
         boolean isChange = false;
         if (!newAvatarPath.equals(latestUser.getImagePath())){
@@ -421,6 +426,7 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
         }
 
         if (!isChange){
+            loadingDialog.onFinishLoading();
             ToastUtil.shortShow("用户信息没有更改");
             return;
         }
@@ -433,11 +439,13 @@ public class PersonalInfoActivity extends BaseActivity implements IPersonalInfoV
 
             @Override
             public void onError(Throwable e) {
+                loadingDialog.onFinishLoading();
                 ToastUtil.shortShow(e.getMessage() == null ? "个人信息同步失败" : e.getMessage());
             }
 
             @Override
             public void onNext(BayMinResponse response) {
+                loadingDialog.onFinishLoading();
                 if (response.isSucceed()){
                     ToastUtil.shortShow("个人信息修改成功");
                 } else {

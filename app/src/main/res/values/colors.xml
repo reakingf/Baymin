@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="transparent">#00000000</color>
     <color name="main_color">#2196F3</color>
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
@@ -28,5 +29,6 @@
     <color name="red">#FF0033</color>
     <color name="light_blue_0">#FF03A9F4</color>
     <color name="toast_bg">#dddfe0</color>
+    <color name="t3_50">#beb1a9</color>
     <color name="test">#FF0288D1</color>
 </resources>
