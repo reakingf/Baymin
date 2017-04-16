@@ -1,8 +1,10 @@
 package com.qa.fgj.baymin.ui.activity;
 
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -23,7 +25,11 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.baidu.speech.EventListener;
+import com.baidu.speech.EventManager;
+import com.baidu.speech.EventManagerFactory;
 import com.qa.fgj.baymin.R;
+import com.qa.fgj.baymin.app.Constant;
 import com.qa.fgj.baymin.base.BaseActivity;
 import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.MessageBean;
@@ -35,6 +41,7 @@ import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.LogUtil;
 import com.qa.fgj.baymin.util.MusicManager;
 import com.qa.fgj.baymin.util.PhotoUtils;
+import com.qa.fgj.baymin.util.TTSManager;
 import com.qa.fgj.baymin.util.ToastUtil;
 import com.qa.fgj.baymin.widget.RoundImageView;
 import com.qa.fgj.baymin.widget.SelectableDialog;
@@ -42,12 +49,20 @@ import com.qa.fgj.baymin.widget.ShowTipDialog;
 import com.qa.fgj.baymin.widget.SpeechRecognizeDialog;
 import com.qa.fgj.baymin.widget.XListView;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import rx.Observable;
 import rx.Scheduler;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 public class MainActivity extends BaseActivity<MainPresenter> implements IMainView, View.OnClickListener,
@@ -77,7 +92,16 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     private SelectableDialog setLanguageDialog;
     private ShowTipDialog exitDialog;
 
+    //语音识别
     private SpeechRecognizeDialog asrDialog;
+    //语音合成
+    private TTSManager ttsUtil;
+    // 语音唤醒事件管理器
+    private EventManager mWpEventManager;
+    // 用于标识是否启动连续识别
+    private boolean isContinueASRStart = false;
+    // 用于标识连续识别模式下是否启动语音识别
+    private boolean shouldStartRecognition = true;
 
     UserBean mUserBean = null;
     private List<MessageBean> listData = new ArrayList<>();
@@ -90,6 +114,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     private long exitTime = 0;
 
     private MusicManager musicManager;
+    private MainReceiver mainReceiver;
 
     private TextWatcher mTextWatcher = new TextWatcher() {
         @Override
@@ -110,9 +135,25 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         }
     };
 
+    //语音唤醒监听器，唤醒词：小白你好
+    EventListener mEventListener = new EventListener() {
+        @Override
+        public void onEvent(String name, String params, byte[] data, int offset, int length) {
+            if ("wp.data".equals(name)) {
+                //每次唤醒成功将会回调name==wp.data事件，被激活的唤醒次在params的word字段
+                isContinueASRStart = true;
+                continuousASR();
+            } else if ("wp.exit".equals(name)) {
+                //唤醒已停止
+                LogUtil.d("-------唤醒已停止");
+            }
+        }
+    };
+
     private MainPresenter presenter;
     private Scheduler uiThread = AndroidSchedulers.mainThread();
     private Scheduler backgroundThread = Schedulers.io();
+    private Subscription continuousASRSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,6 +166,13 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         presenter.onCreate();
         presenter.attachView(this);
         checkShouldLogin();
+        initReceiver();
+        asrDialog = new SpeechRecognizeDialog(this, R.style.Theme_RecognitionDialog);
+        asrDialog.setOnClickListener(this);
+        ttsUtil = new TTSManager(this);
+        mWpEventManager = EventManagerFactory.create(MainActivity.this, "wp");
+        mWpEventManager.registerListener(mEventListener);
+        startWakeUp();
     }
 
     private void initView() {
@@ -181,6 +229,18 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         voiceButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
         editText.addTextChangedListener(mTextWatcher);
+    }
+
+    /**
+     * 初始化广播接收器
+     */
+    private void initReceiver() {
+        mainReceiver = new MainReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Constant.PHONE_STATE_ACTION);
+        intentFilter.addAction(Constant.TTS_STATE_ACTION);
+        intentFilter.addAction(Constant.MUSIC_STATE_ACTION);
+        registerReceiver(mainReceiver, intentFilter);
     }
 
     @Override
@@ -309,21 +369,6 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         }
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.main, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        int id = item.getItemId();
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//        return super.onOptionsItemSelected(item);
-//    }
-
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -343,8 +388,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                 IntroductionActivity.start(this);
                 break;
             case R.id.checkVersion:
-//                updateManager = new UpdateManager(thisContext);
-//                updateManager.isUpdate();
+                // TODO: 版本更新
                 break;
             case R.id.setLanguage:
                 setSystemLanguage();
@@ -360,6 +404,41 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         return true;
     }
 
+    /**
+     * 连续识别
+     */
+    public void continuousASR() {
+        continuousASRSubscription = Observable.interval(0, 3000, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<Long>() {
+                    @Override
+                    public void call(Long aLong) {
+                        if (isContinueASRStart){
+                            if (shouldStartRecognition){
+                                if (asrDialog == null){
+                                    asrDialog = new SpeechRecognizeDialog(MainActivity.this);
+                                }
+                                if (!asrDialog.isShowing()) {
+                                    startRecognition();
+                                }
+                            }
+                        }
+                    }
+                });
+    }
+
+    private void startRecognition(){
+        if (musicManager != null && musicManager.isPlaying()){
+            musicManager.pause();
+        }
+        
+        if (ttsUtil != null){
+            ttsUtil.cancel();
+        }
+        asrDialog.show();
+    }
+    
     /**
      * 设置语音输入类型
      */
@@ -395,21 +474,38 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                 new ShowTipDialog.onPositiveButtonClick() {
                     @Override
                     public void onClick() {
-                        // TODO: 2017/3/19 启动连续识别
                         continuousRecogDialog.dismiss();
-                        ToastUtil.show("连续识别已启动，可在在这里关闭或通过“关闭识别”命令要求小白自动关闭");
+                        isContinueASRStart = true;
+                        shouldStartRecognition = true;
+                        continuousASR();
                     }
                 });
         continuousRecogDialog.setNegativeButton(getString(R.string.close),
                 new ShowTipDialog.onNegativeButtonClick() {
                     @Override
                     public void onClick() {
-                        // TODO: 2017/3/19 关闭连续识别
                         continuousRecogDialog.dismiss();
-                        ToastUtil.show("连续识别已关闭，可在在这里重新启动或通过“小白你好”命令唤醒小白并自动启动连续识别");
+                        isContinueASRStart = false;
+                        continuousASRSubscription.unsubscribe();
+                        startWakeUp();
                     }
                 });
         continuousRecogDialog.show();
+    }
+    /**
+     * 启动语音唤醒
+     */
+    private void startWakeUp() {
+        if (mWpEventManager != null) {
+            HashMap params = new HashMap();
+            try {
+                params.put("kws-file", "assets:///WakeUp.bin");
+                mWpEventManager.send("wp.start", new JSONObject(params).toString(), null, 0, 0);
+            } catch (Exception e) {
+                LogUtil.e("---启动语音唤醒失败： " + e.toString());
+                ToastUtil.shortShow("---启动语音唤醒失败： " + e.toString());
+            }
+        }
     }
 
     @Override
@@ -432,10 +528,11 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                 startSpeechReconDialog();
                 break;
             case R.id.sendButton:
+                if (ttsUtil != null)
+                    ttsUtil.cancel();
                 handleSendQuestion(editText.getText().toString().trim());
                 break;
             case R.id.speak_finish:
-                //todo 识别语音
                 asrDialog.stopListening();
                 break;
             case R.id.header_to_login:
@@ -483,8 +580,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         if (TextUtils.isEmpty(question)){
             ToastUtil.shortShow(getString(R.string.null_tips));
         } else if (getString(R.string.close_asr).equals(question)) {
-            //todo 关闭语音连续识别
+            isContinueASRStart = false;
         } else {
+            shouldStartRecognition = false;
             final MessageBean sendMsg = new MessageBean(question, MessageBean.TYPE_SEND, System.currentTimeMillis());
             listData.add(sendMsg);
             adapter.notifyDataSetChanged();
@@ -522,13 +620,25 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                         messageBean.isSending = false;
                         messageBean.isSendSuccessful = true;
                         messageBean.isSendMsg = false;
-                        String responseMessage = response.getContent();
-                        responseMessage = checkCommand(responseMessage);
-                        messageBean.setContent(responseMessage);
+                        String answer = response.getContent();
+                        answer = checkCommand(answer);
+                        messageBean.setContent(answer);
                         messageBean.setCreateTime(System.currentTimeMillis());
                         listData.add(messageBean);
                         presenter.save(messageBean);
-                        //todo 语音合成答案
+                        if (ttsUtil != null){
+                            try {
+                                //TODO 答案过长时如何处理
+                                if (answer.getBytes("gbk").length > 1024) {
+                                    String subs1 = answer.substring(0, 512);
+                                    ttsUtil.speak(subs1);
+                                } else {
+                                    ttsUtil.speak(answer);
+                                }
+                            } catch (UnsupportedEncodingException e) {
+                                e.printStackTrace();
+                            }
+                        }
                         adapter.notifyDataSetChanged();
                     }
                 }
@@ -628,7 +738,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
             asrDialog = new SpeechRecognizeDialog(this, R.style.Theme_RecognitionDialog);
             asrDialog.setOnClickListener(this);
         }
-        asrDialog.show();
+        startRecognition();
         asrDialog.setText(R.string.speech_preper);
         asrDialog.setImageResource(R.drawable.v1);
     }
@@ -743,6 +853,35 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         }
     }
 
+
+    /**
+     * 用于处理该Activity的广播接收器
+     */
+    public class MainReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            switch (action) {
+                case Constant.TTS_STATE_ACTION:
+                    String ttsState = intent.getStringExtra("tts_msg");
+                    if (ttsState.equals(Constant.TTS_STARTING)) {  //语音合成已启动
+                        shouldStartRecognition = false;
+                    } else if (ttsState.equals(Constant.TTS_STOP)) {
+                        shouldStartRecognition = true;
+                    }
+                    break;
+                case Constant.PHONE_STATE_ACTION: {
+                    // TODO:  通话状态
+                    break;
+                }
+                default: {
+                    // TODO: 音乐播放
+                    break;
+                }
+            }
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -750,9 +889,20 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         destroyDialog(continuousRecogDialog);
         destroyDialog(setLanguageDialog);
         destroyDialog(exitDialog);
+        if (continuousASRSubscription != null && !continuousASRSubscription.isUnsubscribed()){
+            continuousASRSubscription.unsubscribe();
+        }
+        if (mWpEventManager != null){
+            mWpEventManager.unregisterListener(mEventListener);
+            mWpEventManager = null;
+        }
         if (asrDialog != null){
             asrDialog.onDestroy();
         }
+        if (ttsUtil != null){
+            ttsUtil.release();
+        }
+        unregisterReceiver(mainReceiver);
         musicManager.destroyMediaPlayer();
         presenter.detachView();
         presenter.onDestroy();
