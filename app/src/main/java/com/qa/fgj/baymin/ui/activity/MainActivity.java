@@ -32,6 +32,7 @@ import com.qa.fgj.baymin.presenter.MainPresenter;
 import com.qa.fgj.baymin.ui.view.IMainView;
 import com.qa.fgj.baymin.ui.adapter.MsgAdapter;
 import com.qa.fgj.baymin.util.Global;
+import com.qa.fgj.baymin.util.LogUtil;
 import com.qa.fgj.baymin.util.MusicManager;
 import com.qa.fgj.baymin.util.PhotoUtils;
 import com.qa.fgj.baymin.util.ToastUtil;
@@ -76,7 +77,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     private SelectableDialog setLanguageDialog;
     private ShowTipDialog exitDialog;
 
-    private SpeechRecognizeDialog dialog;
+    private SpeechRecognizeDialog asrDialog;
 
     UserBean mUserBean = null;
     private List<MessageBean> listData = new ArrayList<>();
@@ -208,6 +209,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                     break;
                 case RESULT_OK:
                     //语音识别成功后获取语音的文本形式内容的回调接口
+                    asrDialog.onActivityResult(data);
                     break;
             }
         }
@@ -430,12 +432,11 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                 startSpeechReconDialog();
                 break;
             case R.id.sendButton:
-                handleSendQuestion();
+                handleSendQuestion(editText.getText().toString().trim());
                 break;
             case R.id.speak_finish:
                 //todo 识别语音
-                ToastUtil.shortShow("识别完成");
-                dialog.dismiss();
+                asrDialog.stopListening();
                 break;
             case R.id.header_to_login:
                 LoginActivity.startForResult(MainActivity.this);
@@ -477,9 +478,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     }
 
     @SuppressWarnings("unchecked")
-    private void handleSendQuestion() {
+    public void handleSendQuestion(String question) {
         sendButton.setBackgroundResource(R.drawable.bg_button);
-        String question = editText.getText().toString().trim();
         if (TextUtils.isEmpty(question)){
             ToastUtil.shortShow(getString(R.string.null_tips));
         } else if (getString(R.string.close_asr).equals(question)) {
@@ -522,9 +522,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                         messageBean.isSending = false;
                         messageBean.isSendSuccessful = true;
                         messageBean.isSendMsg = false;
-                        String message = response.getContent();
-                        message = checkCommand(message);
-                        messageBean.setContent(message);
+                        String responseMessage = response.getContent();
+                        responseMessage = checkCommand(responseMessage);
+                        messageBean.setContent(responseMessage);
                         messageBean.setCreateTime(System.currentTimeMillis());
                         listData.add(messageBean);
                         presenter.save(messageBean);
@@ -537,13 +537,6 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
             editText.setText("");
         }
     }
-
-//    private void startServiceIntent(String url, String msg){
-//        Intent intent = new Intent(this, MusicService.class);
-//        intent.putExtra("url", url);
-//        intent.putExtra("MSG", msg);
-//        startService(intent);
-//    }
 
     /**
      * 检查答复内容是否是命令指令，目前只检查语音类别指令和音乐播放处理指令
@@ -631,13 +624,13 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     }
 
     private void startSpeechReconDialog() {
-        if (dialog == null){
-            dialog = new SpeechRecognizeDialog(this, R.style.Theme_RecognitionDialog);
-            dialog.setOnClickListener(this);
+        if (asrDialog == null){
+            asrDialog = new SpeechRecognizeDialog(this, R.style.Theme_RecognitionDialog);
+            asrDialog.setOnClickListener(this);
         }
-        dialog.show();
-        dialog.setText(R.string.speech_preper);
-        dialog.setImageResource(R.drawable.v1);
+        asrDialog.show();
+        asrDialog.setText(R.string.speech_preper);
+        asrDialog.setImageResource(R.drawable.v1);
     }
 
     @Override
@@ -757,6 +750,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         destroyDialog(continuousRecogDialog);
         destroyDialog(setLanguageDialog);
         destroyDialog(exitDialog);
+        if (asrDialog != null){
+            asrDialog.onDestroy();
+        }
         musicManager.destroyMediaPlayer();
         presenter.detachView();
         presenter.onDestroy();

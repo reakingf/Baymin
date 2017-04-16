@@ -7,6 +7,7 @@ import com.qa.fgj.baymin.model.MainModel;
 import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.ui.view.IMainView;
+import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.LogUtil;
 
 import java.util.ArrayList;
@@ -98,13 +99,16 @@ public class MainPresenter<T extends IMainView> implements IBasePresenter<T> {
     }
 
     public Observable<Boolean> save(MessageBean msg){
-        try{
-            mModel.saveData(msg);
-        } catch (Exception e){
-            e.printStackTrace();
-            return Observable.just(false);
+        if (Global.isLogin){
+            try{
+                mModel.saveData(msg);
+            } catch (Exception e){
+                e.printStackTrace();
+                return Observable.just(false);
+            }
+            return Observable.just(true);
         }
-        return Observable.just(true);
+        return Observable.just(false);
     }
 
     @Override
