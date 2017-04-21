@@ -102,6 +102,10 @@ public class SpeechRecognizeDialog extends Dialog {
     @Override
     public void dismiss() {
         super.dismiss();
+        if (speechRecognizer != null) {
+            speechRecognizer.cancel(); //取消本次识别，已有录音也将不再识别。
+            isRecognizing = false;
+        }
     }
 
     // 开始识别

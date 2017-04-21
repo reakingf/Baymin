@@ -13,4 +13,9 @@ public interface IMainView extends IBaseView {
 
     void initListViewData(List<MessageBean> msgList);
 
+    void startRecognition();
+
+    boolean isRecognizing();
+
+    void musicStateTip(String tip);
 }

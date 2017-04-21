@@ -13,6 +13,8 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -25,9 +27,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.baidu.speech.EventListener;
-import com.baidu.speech.EventManager;
-import com.baidu.speech.EventManagerFactory;
 import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.app.Constant;
 import com.qa.fgj.baymin.base.BaseActivity;
@@ -38,7 +37,6 @@ import com.qa.fgj.baymin.presenter.MainPresenter;
 import com.qa.fgj.baymin.ui.view.IMainView;
 import com.qa.fgj.baymin.ui.adapter.MsgAdapter;
 import com.qa.fgj.baymin.util.Global;
-import com.qa.fgj.baymin.util.LogUtil;
 import com.qa.fgj.baymin.util.MusicManager;
 import com.qa.fgj.baymin.util.PhotoUtils;
 import com.qa.fgj.baymin.util.TTSManager;
@@ -49,20 +47,13 @@ import com.qa.fgj.baymin.widget.ShowTipDialog;
 import com.qa.fgj.baymin.widget.SpeechRecognizeDialog;
 import com.qa.fgj.baymin.widget.XListView;
 
-import org.json.JSONObject;
-
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import rx.Observable;
 import rx.Scheduler;
 import rx.Subscriber;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 public class MainActivity extends BaseActivity<MainPresenter> implements IMainView, View.OnClickListener,
@@ -92,16 +83,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     private SelectableDialog setLanguageDialog;
     private ShowTipDialog exitDialog;
 
-    //语音识别
+    //语音识别对话框
     private SpeechRecognizeDialog asrDialog;
-    //语音合成
-    private TTSManager ttsUtil;
-    // 语音唤醒事件管理器
-    private EventManager mWpEventManager;
-    // 用于标识是否启动连续识别
-    private boolean isContinueASRStart = false;
-    // 用于标识连续识别模式下是否启动语音识别
-    private boolean shouldStartRecognition = true;
 
     UserBean mUserBean = null;
     private List<MessageBean> listData = new ArrayList<>();
@@ -112,9 +95,6 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
 
     private InputMethodManager inputMethodManager;
     private long exitTime = 0;
-
-    private MusicManager musicManager;
-    private MainReceiver mainReceiver;
 
     private TextWatcher mTextWatcher = new TextWatcher() {
         @Override
@@ -135,44 +115,25 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         }
     };
 
-    //语音唤醒监听器，唤醒词：小白你好
-    EventListener mEventListener = new EventListener() {
-        @Override
-        public void onEvent(String name, String params, byte[] data, int offset, int length) {
-            if ("wp.data".equals(name)) {
-                //每次唤醒成功将会回调name==wp.data事件，被激活的唤醒次在params的word字段
-                isContinueASRStart = true;
-                continuousASR();
-            } else if ("wp.exit".equals(name)) {
-                //唤醒已停止
-                LogUtil.d("-------唤醒已停止");
-            }
-        }
-    };
-
     private MainPresenter presenter;
     private Scheduler uiThread = AndroidSchedulers.mainThread();
     private Scheduler backgroundThread = Schedulers.io();
-    private Subscription continuousASRSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
-        musicManager = new MusicManager(this);
         inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        telephonyManager.listen(new MobilePhoneStateListener(), PhoneStateListener.LISTEN_CALL_STATE);
         presenter = new MainPresenter(this, uiThread, backgroundThread);
         presenter.onCreate();
         presenter.attachView(this);
         checkShouldLogin();
-        initReceiver();
-        asrDialog = new SpeechRecognizeDialog(this, R.style.Theme_RecognitionDialog);
-        asrDialog.setOnClickListener(this);
-        ttsUtil = new TTSManager(this);
-        mWpEventManager = EventManagerFactory.create(MainActivity.this, "wp");
-        mWpEventManager.registerListener(mEventListener);
-        startWakeUp();
+//        asrDialog = new SpeechRecognizeDialog(this, R.style.Theme_RecognitionDialog);
+//        asrDialog.setOnClickListener(this);
+        presenter.startWakeUp();
     }
 
     private void initView() {
@@ -229,18 +190,6 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         voiceButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
         editText.addTextChangedListener(mTextWatcher);
-    }
-
-    /**
-     * 初始化广播接收器
-     */
-    private void initReceiver() {
-        mainReceiver = new MainReceiver();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Constant.PHONE_STATE_ACTION);
-        intentFilter.addAction(Constant.TTS_STATE_ACTION);
-        intentFilter.addAction(Constant.MUSIC_STATE_ACTION);
-        registerReceiver(mainReceiver, intentFilter);
     }
 
     @Override
@@ -363,8 +312,6 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
             ToastUtil.shortShow(getString(R.string.exit_tip));
             exitTime = System.currentTimeMillis();
         } else {
-//            finish();
-//            System.exit(0);
             super.onBackPressed();
         }
     }
@@ -389,6 +336,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                 break;
             case R.id.checkVersion:
                 // TODO: 版本更新
+                ToastUtil.shortShow("待完善");
                 break;
             case R.id.setLanguage:
                 setSystemLanguage();
@@ -404,41 +352,31 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         return true;
     }
 
-    /**
-     * 连续识别
-     */
-    public void continuousASR() {
-        continuousASRSubscription = Observable.interval(0, 3000, TimeUnit.MILLISECONDS)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<Long>() {
-                    @Override
-                    public void call(Long aLong) {
-                        if (isContinueASRStart){
-                            if (shouldStartRecognition){
-                                if (asrDialog == null){
-                                    asrDialog = new SpeechRecognizeDialog(MainActivity.this);
-                                }
-                                if (!asrDialog.isShowing()) {
-                                    startRecognition();
-                                }
-                            }
-                        }
-                    }
-                });
-    }
-
-    private void startRecognition(){
-        if (musicManager != null && musicManager.isPlaying()){
-            musicManager.pause();
+    @Override
+    public void startRecognition(){
+        if (asrDialog == null){
+            asrDialog = new SpeechRecognizeDialog(this, R.style.Theme_RecognitionDialog);
+            asrDialog.setOnClickListener(this);
         }
-        
-        if (ttsUtil != null){
-            ttsUtil.cancel();
-        }
+        asrDialog.setText(R.string.speech_preper);
+        asrDialog.setImageResource(R.drawable.v1);
         asrDialog.show();
     }
-    
+
+    @Override
+    public boolean isRecognizing() {
+        return asrDialog != null && asrDialog.isShowing();
+    }
+
+    @Override
+    public void musicStateTip(String tip) {
+        MessageBean resp_msg3 = new MessageBean(tip, MessageBean.TYPE_RECEIVED, System.currentTimeMillis());
+        listData.add(resp_msg3);
+        adapter.notifyDataSetChanged();
+        presenter.speak(tip);
+        presenter.save(resp_msg3);
+    }
+
     /**
      * 设置语音输入类型
      */
@@ -475,9 +413,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                     @Override
                     public void onClick() {
                         continuousRecogDialog.dismiss();
-                        isContinueASRStart = true;
-                        shouldStartRecognition = true;
-                        continuousASR();
+                        presenter.setContinueASRStart(true);
+                        presenter.setShouldStartRecognition(true);
+                        presenter.startContinuousASR();
                     }
                 });
         continuousRecogDialog.setNegativeButton(getString(R.string.close),
@@ -485,32 +423,15 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                     @Override
                     public void onClick() {
                         continuousRecogDialog.dismiss();
-                        isContinueASRStart = false;
-                        continuousASRSubscription.unsubscribe();
-                        startWakeUp();
+                        presenter.stopContinuousASR();
                     }
                 });
         continuousRecogDialog.show();
     }
-    /**
-     * 启动语音唤醒
-     */
-    private void startWakeUp() {
-        if (mWpEventManager != null) {
-            HashMap params = new HashMap();
-            try {
-                params.put("kws-file", "assets:///WakeUp.bin");
-                mWpEventManager.send("wp.start", new JSONObject(params).toString(), null, 0, 0);
-            } catch (Exception e) {
-                LogUtil.e("---启动语音唤醒失败： " + e.toString());
-                ToastUtil.shortShow("---启动语音唤醒失败： " + e.toString());
-            }
-        }
-    }
 
     @Override
     public void showError(String msg) {
-
+        ToastUtil.shortShow(msg);
     }
 
     @Override
@@ -525,11 +446,10 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                 changeInputType();
                 break;
             case R.id.voiceButton:
-                startSpeechReconDialog();
+                presenter.startRecognition();
                 break;
             case R.id.sendButton:
-                if (ttsUtil != null)
-                    ttsUtil.cancel();
+                presenter.stopSpeak();
                 handleSendQuestion(editText.getText().toString().trim());
                 break;
             case R.id.speak_finish:
@@ -580,9 +500,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         if (TextUtils.isEmpty(question)){
             ToastUtil.shortShow(getString(R.string.null_tips));
         } else if (getString(R.string.close_asr).equals(question)) {
-            isContinueASRStart = false;
+            presenter.stopContinuousASR();
         } else {
-            shouldStartRecognition = false;
+            presenter.setShouldStartRecognition(false);
             final MessageBean sendMsg = new MessageBean(question, MessageBean.TYPE_SEND, System.currentTimeMillis());
             listData.add(sendMsg);
             adapter.notifyDataSetChanged();
@@ -603,6 +523,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                     adapter.notifyDataSetChanged();
                     //todo 小白回复：网络错误，请重试
                     presenter.save(sendMsg);
+                    presenter.setShouldStartRecognition(true);
                 }
 
                 @Override
@@ -621,127 +542,21 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                         messageBean.isSendSuccessful = true;
                         messageBean.isSendMsg = false;
                         String answer = response.getContent();
-                        answer = checkCommand(answer);
+                        answer = presenter.checkCommand(answer);
                         messageBean.setContent(answer);
                         messageBean.setCreateTime(System.currentTimeMillis());
                         listData.add(messageBean);
                         presenter.save(messageBean);
-                        if (ttsUtil != null){
-                            try {
-                                //TODO 答案过长时如何处理
-                                if (answer.getBytes("gbk").length > 1024) {
-                                    String subs1 = answer.substring(0, 512);
-                                    ttsUtil.speak(subs1);
-                                } else {
-                                    ttsUtil.speak(answer);
-                                }
-                            } catch (UnsupportedEncodingException e) {
-                                e.printStackTrace();
-                            }
-                        }
+                        presenter.speak(answer);
                         adapter.notifyDataSetChanged();
                     }
                 }
             };
             presenter.getAnswer(question, subscriber);
-            editText.setText("");
         }
+        editText.setText("");
     }
 
-    /**
-     * 检查答复内容是否是命令指令，目前只检查语音类别指令和音乐播放处理指令
-     * @param answer 答复内容
-     * @return 检查后结果，若非命令指令则不修改答复内容，若是命令则直接执行命令并修改答复内容
-     */
-    public String checkCommand(String answer) {
-        switch (answer) {
-            case "[英文]":
-                answer = getString(R.string.change_to_English);
-//                config.setCurrentLanguage(1);
-                break;
-            case "[中文]":
-                answer = getString(R.string.change_to_Chinese);
-//                config.setCurrentLanguage(0);
-                break;
-            case "[音乐播放]":
-                if (musicManager == null){
-                    answer = getString(R.string.request_storage_tip);
-//                    permissionUtil.isPermissionGranted(Manifest.permission.READ_EXTERNAL_STORAGE, PermissionUtil.REQUEST_STORAGE_CODE,
-//                            getString(R.string.request_storage_tip));
-                } else {
-                    answer = getString(R.string.music) + musicManager.start() + getString(R.string.playing);
-                }
-                break;
-            case "[音乐暂停]":
-                if (musicManager == null){
-                    answer = getString(R.string.did_not_start_music_manager);
-                } else {
-                    answer = musicManager.pause();
-                    if ("null".equals(answer)) {
-                        answer = getString(R.string.no_music_play);
-                    } else {
-                        answer = getString(R.string.music) + answer + getString(R.string.pause);
-                    }
-                }
-                break;
-            case "[音乐继续]":
-                if (musicManager == null){
-                    answer = getString(R.string.did_not_start_music_manager);
-                } else {
-                    answer = musicManager.continues();
-                    if ("null".equals(answer)) {
-                        answer = getString(R.string.no_music_play);
-                    } else
-                        answer = getString(R.string.music) + answer + getString(R.string.continues);
-                }
-                break;
-            case "[音乐停止]":
-                if (musicManager == null){
-                    answer = getString(R.string.did_not_start_music_manager);
-                } else {
-                    answer = musicManager.stop();
-                    if ("null".equals(answer)) {
-                        answer = getString(R.string.no_music_play);
-                    } else {
-                        answer = getString(R.string.music) + answer + getString(R.string.stop);
-                    }
-                }
-                break;
-            case "[音乐下一首]":
-                if (musicManager == null){
-                    answer = getString(R.string.did_not_start_music_manager);
-                } else {
-                    answer = musicManager.nextSong();
-                    if ("null".equals(answer)) {
-                        answer = getString(R.string.music) + musicManager.start() + getString(R.string.playing);
-                    } else
-                        answer = getString(R.string.next) + musicManager.nextSong();
-                }
-                break;
-            case "[音乐上一首]":
-                if (musicManager == null){
-                    answer = getString(R.string.did_not_start_music_manager);
-                } else {
-                    answer = musicManager.previousSong();
-                    if ("null".equals(answer)) {
-                        answer = getString(R.string.music) + musicManager.start() + getString(R.string.playing);
-                    } else
-                        answer = getString(R.string.previous) + musicManager.previousSong();
-                }
-                break;
-        }
-        return answer;
-    }
-
-    private void startSpeechReconDialog() {
-        if (asrDialog == null){
-            asrDialog = new SpeechRecognizeDialog(this, R.style.Theme_RecognitionDialog);
-            asrDialog.setOnClickListener(this);
-        }
-        startRecognition();
-        asrDialog.setText(R.string.speech_preper);
-        asrDialog.setImageResource(R.drawable.v1);
-    }
 
     @Override
     public void onRefresh() {
@@ -847,38 +662,48 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         exitDialog.show();
     }
 
-    private void destroyDialog(Dialog dialog){
-        if (dialog != null && dialog.isShowing()){
-            dialog.dismiss();
+    /**
+     * 通话监听器类
+     */
+    private class MobilePhoneStateListener extends PhoneStateListener {
+
+        //标志是否第一次进入该App，若是则不执行挂机状态事件处理
+        private boolean isFirst = true;
+
+        @Override
+        public void onCallStateChanged(int state, String incomingNumber) {
+            switch (state) {
+                case TelephonyManager.CALL_STATE_IDLE: // 挂机状态
+                    Intent idleIntent = new Intent();
+                    idleIntent.setAction(Constant.PHONE_STATE_ACTION);
+                    idleIntent.putExtra("MUSIC_MSG", Constant.MUSIC_CONTINUE);
+                    idleIntent.putExtra("isFirst", isFirst);
+                    sendBroadcast(idleIntent);
+                    isFirst = false;
+                    presenter.setShouldStartRecognition(true);
+                    break;
+                case TelephonyManager.CALL_STATE_OFFHOOK:    //通话状态
+                    break;
+                case TelephonyManager.CALL_STATE_RINGING:    //响铃状态
+                    Intent ringingIntent = new Intent();
+                    ringingIntent.setAction(Constant.PHONE_STATE_ACTION);
+                    ringingIntent.putExtra("MUSIC_MSG", Constant.MUSIC_PAUSE);
+                    ringingIntent.putExtra("TTS_MSG", Constant.TTS_STOP);
+                    sendBroadcast(ringingIntent);
+                    presenter.setShouldStartRecognition(false);
+                    if (asrDialog != null && asrDialog.isShowing()) {
+                        asrDialog.dismiss();
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
-
-    /**
-     * 用于处理该Activity的广播接收器
-     */
-    public class MainReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            switch (action) {
-                case Constant.TTS_STATE_ACTION:
-                    String ttsState = intent.getStringExtra("tts_msg");
-                    if (ttsState.equals(Constant.TTS_STARTING)) {  //语音合成已启动
-                        shouldStartRecognition = false;
-                    } else if (ttsState.equals(Constant.TTS_STOP)) {
-                        shouldStartRecognition = true;
-                    }
-                    break;
-                case Constant.PHONE_STATE_ACTION: {
-                    // TODO:  通话状态
-                    break;
-                }
-                default: {
-                    // TODO: 音乐播放
-                    break;
-                }
-            }
+    private void destroyDialog(Dialog dialog){
+        if (dialog != null && dialog.isShowing()){
+            dialog.dismiss();
         }
     }
 
@@ -889,21 +714,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         destroyDialog(continuousRecogDialog);
         destroyDialog(setLanguageDialog);
         destroyDialog(exitDialog);
-        if (continuousASRSubscription != null && !continuousASRSubscription.isUnsubscribed()){
-            continuousASRSubscription.unsubscribe();
-        }
-        if (mWpEventManager != null){
-            mWpEventManager.unregisterListener(mEventListener);
-            mWpEventManager = null;
-        }
         if (asrDialog != null){
             asrDialog.onDestroy();
         }
-        if (ttsUtil != null){
-            ttsUtil.release();
-        }
-        unregisterReceiver(mainReceiver);
-        musicManager.destroyMediaPlayer();
         presenter.detachView();
         presenter.onDestroy();
     }

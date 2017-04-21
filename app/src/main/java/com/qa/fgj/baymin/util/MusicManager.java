@@ -28,12 +28,12 @@ public class MusicManager implements MediaPlayer.OnCompletionListener {
     private Context context;
     private List<MusicInfo> musicList;
     private MediaPlayer mediaPlayer = new MediaPlayer();
-    int listCount;
-    int firstPlay;
-    int currentPlay;
+    private int listCount;
+    private int firstPlay;
+    private int currentPlay;
     private boolean isPause = false;
-    public boolean isStart = false;
-    Intent intent = new Intent(Constant.MUSIC_STATE_ACTION);
+    private boolean isStart = false;
+    private Intent musicIntent = new Intent(Constant.MUSIC_STATE_ACTION);
     public MusicManager(final Context context){
         this.context = context;
         getMusicInfos(context)
@@ -165,8 +165,8 @@ public class MusicManager implements MediaPlayer.OnCompletionListener {
     }
 
     private void mSendBroadCast(String msg){
-        intent.putExtra("MUSIC_MSG", msg);
-        context.sendBroadcast(intent);
+        musicIntent.putExtra("MUSIC_MSG", msg);
+        context.sendBroadcast(musicIntent);
     }
 
     public static Observable<List<MusicInfo>> getMusicInfos (Context context){

@@ -99,7 +99,7 @@ public class PhotoUtils {
         //设置裁剪比例
         intent.putExtra("aspectX", 1);
         intent.putExtra("aspectY", 1);
-        //intent.putExtra("scale", true);
+        //musicIntent.putExtra("scale", true);
         intent.putExtra("return-data", false);
         //由于这里指定了输出路径，导致在onActivityResult中的intent参数为null
         intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
