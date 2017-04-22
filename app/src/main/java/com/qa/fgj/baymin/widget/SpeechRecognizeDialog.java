@@ -52,7 +52,8 @@ public class SpeechRecognizeDialog extends Dialog {
     private boolean isInitRecognizer = false;
     // 语音识别监听器
     MyRecognitionListener recognitionListener;
-    private String currentLanguage = Constant.LANGUAGE_CHINESE;//默认为中文输入
+    //默认为中文输入
+    private String currentLanguage = Constant.LANGUAGE_CHINESE;
     public static boolean isRecognizing = false;
 
     public SpeechRecognizeDialog(Context context) {
@@ -116,6 +117,7 @@ public class SpeechRecognizeDialog extends Dialog {
     }
 
     private void bindParams(Intent recognizerIntent) {
+        recognizerIntent.putExtra("language", currentLanguage);
         // 设置识别参数
         recognizerIntent.putExtra(Constant.EXTRA_SOUND_START, R.raw.bdspeech_recognition_start);
         recognizerIntent.putExtra(Constant.EXTRA_SOUND_SUCCESS, R.raw.bdspeech_recognition_success);

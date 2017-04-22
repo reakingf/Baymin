@@ -1,10 +1,10 @@
 package com.qa.fgj.baymin.ui.activity;
 
 import android.app.Dialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -37,9 +37,7 @@ import com.qa.fgj.baymin.presenter.MainPresenter;
 import com.qa.fgj.baymin.ui.view.IMainView;
 import com.qa.fgj.baymin.ui.adapter.MsgAdapter;
 import com.qa.fgj.baymin.util.Global;
-import com.qa.fgj.baymin.util.MusicManager;
 import com.qa.fgj.baymin.util.PhotoUtils;
-import com.qa.fgj.baymin.util.TTSManager;
 import com.qa.fgj.baymin.util.ToastUtil;
 import com.qa.fgj.baymin.widget.RoundImageView;
 import com.qa.fgj.baymin.widget.SelectableDialog;
@@ -47,9 +45,9 @@ import com.qa.fgj.baymin.widget.ShowTipDialog;
 import com.qa.fgj.baymin.widget.SpeechRecognizeDialog;
 import com.qa.fgj.baymin.widget.XListView;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import rx.Scheduler;
 import rx.Subscriber;
@@ -89,11 +87,19 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     UserBean mUserBean = null;
     private List<MessageBean> listData = new ArrayList<>();
     private MsgAdapter adapter;
-    /* 初始消息id */
+    //初始消息id
     private String msgID = "0";
     private boolean mPullRefreshing = false;
 
     private InputMethodManager inputMethodManager;
+    // 用于设置系统语言
+    Configuration configuration;
+    //用于保存系统语言类型
+    SharedPreferences setConfig;
+    //用于修改系统语言类型
+    SharedPreferences.Editor setEditor;
+    //存储当前系统语言
+    String currentLanguage = "";
     private long exitTime = 0;
 
     private TextWatcher mTextWatcher = new TextWatcher() {
@@ -122,6 +128,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        recoveryLanguage();
         setContentView(R.layout.activity_main);
         initView();
         inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -131,8 +138,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         presenter.onCreate();
         presenter.attachView(this);
         checkShouldLogin();
-//        asrDialog = new SpeechRecognizeDialog(this, R.style.Theme_RecognitionDialog);
-//        asrDialog.setOnClickListener(this);
+        asrDialog = new SpeechRecognizeDialog(this, R.style.Theme_RecognitionDialog);
+        asrDialog.setOnClickListener(this);
         presenter.startWakeUp();
     }
 
@@ -339,7 +346,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                 ToastUtil.shortShow("待完善");
                 break;
             case R.id.setLanguage:
-                setSystemLanguage();
+                showLangSettingDialog();
                 break;
             case R.id.exit:
                 setExitApp();
@@ -386,7 +393,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         chooseLanguageDialog.setFirstItem("普通话(中国)", new SelectableDialog.ItemClickListener() {
             @Override
             public void onClick() {
-                //config.setCurrentLanguage(0);
+                asrDialog.setCurrentLanguage(0);
                 String tips = getResources().getString(R.string.currentLanguage) + "普通话(中国)";
                 ToastUtil.show(tips);
                 chooseLanguageDialog.dismiss();
@@ -395,7 +402,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         chooseLanguageDialog.setSecondItem("English(United State)", new SelectableDialog.ItemClickListener() {
             @Override
             public void onClick() {
-                //config.setCurrentLanguage(1);
+                asrDialog.setCurrentLanguage(1);
                 String tips = getResources().getString(R.string.currentLanguage) + "English(United State)";
                 ToastUtil.show(tips);
                 chooseLanguageDialog.dismiss();
@@ -601,44 +608,67 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     /**
      * 设置系统语言
      */
-    public void setSystemLanguage() {
+    public void showLangSettingDialog() {
         setLanguageDialog = new SelectableDialog(this);
         setLanguageDialog.setTitleText(getString(R.string.setLanguage));
         setLanguageDialog.setFirstItem("中文(简体)", new SelectableDialog.ItemClickListener() {
             @Override
             public void onClick() {
-//                setEditor = setConfig.edit();
-//                if (which == 0){
-//                    configuration.locale = Locale.CHINA;
-//                    currentLanguage = "CHINA";
-//                    setEditor.putString("language", currentLanguage);
-//                }else {
-//                    configuration.locale = Locale.ENGLISH;
-//                    currentLanguage = "ENGLISH";
-//                    setEditor.putString("language", currentLanguage);
-//                }
-//                getResources().updateConfiguration(configuration, getBaseContext().getResources().getDisplayMetrics());
-//                boolean ok = setEditor.commit();
-//                if (ok){
-//                    Intent intent = getIntent();
-//                    finish();
-//                    startActivity(intent);
-//                }else {
-//                    String tip = getResources().getString(R.string.changeFail) + languages[which];
-//                    Toast.makeText(MainActivity.this, tip, Toast.LENGTH_SHORT).show();
-//                }
                 setLanguageDialog.dismiss();
+                setSystemLanguage(0);
             }
         });
         setLanguageDialog.setSecondItem("English", new SelectableDialog.ItemClickListener() {
             @Override
             public void onClick() {
                 setLanguageDialog.dismiss();
+                setSystemLanguage(1);
             }
         });
         setLanguageDialog.show();
     }
 
+    private void setSystemLanguage(int index){
+        final String[] languages = {"中文(简体)", "English"};
+        setEditor = setConfig.edit();
+        if (index == 0){
+            configuration.locale = Locale.CHINA;
+            currentLanguage = "CHINA";
+            setEditor.putString("language", currentLanguage);
+        }else {
+            configuration.locale = Locale.ENGLISH;
+            currentLanguage = "ENGLISH";
+            setEditor.putString("language", currentLanguage);
+        }
+        getResources().updateConfiguration(configuration, getBaseContext().getResources().getDisplayMetrics());
+        boolean ok = setEditor.commit();
+        if (ok){
+            Intent intent = getIntent();
+            finish();
+            startActivity(intent);
+        }else {
+            String tip = getResources().getString(R.string.changeFail) + languages[index];
+            ToastUtil.shortShow(tip);
+        }
+    }
+
+    /**
+     * 恢复到上一次设置好的语言，若没有即为手机系统当前语言
+     */
+    private void recoveryLanguage(){
+        configuration = getResources().getConfiguration();
+        setConfig = getSharedPreferences("set", MODE_PRIVATE);
+        String lang = setConfig.getString("language", null);
+        if (lang != null){
+            if (lang.equals("CHINA")){
+                configuration.locale = Locale.CHINA;
+            }
+            else{
+                configuration.locale = Locale.ENGLISH;
+            }
+            getResources().updateConfiguration(configuration, getBaseContext().getResources().getDisplayMetrics());
+        }
+    }
     /**
      * 关闭应用程序
      */
