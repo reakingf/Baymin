@@ -198,7 +198,7 @@ public class AppUpdateManager {
 
     private String saveApk(ResponseBody body, AppUpdateInfo appUpdateInfo) {
         String apkPath = null;
-        apkName = appUpdateInfo.getName();
+        apkName = appUpdateInfo.getName() + ".apk";
         try {
             InputStream in = null;
             BufferedInputStream bis = null;
@@ -207,7 +207,11 @@ public class AppUpdateManager {
                 in = body.byteStream();
                 bis = new BufferedInputStream(in);
                 byte[] buffer = new byte[1024];
-                apkPath = Constant.PATH_APP + File.separator + appUpdateInfo.getName() + ".apk";
+                apkPath = Constant.PATH_APP + File.separator + apkName;
+                File file = new File(apkPath);
+                if (file.exists()){
+                    file.delete();
+                }
                 fos = new FileOutputStream(apkPath);
                 int count = 0;
                 while (!isCancelDownload){
