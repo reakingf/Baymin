@@ -25,7 +25,8 @@
     <string name="close">close</string>
     <string name="startup">startup</string>
     <string name="new_version">detecting a new version:&#160; </string>
-    <string name="update">update</string>
+    <string name="update_now">update now</string>
+    <string name="update_next_time">update next time</string>
     <string name="version_updating">updating</string>
     <string name="being_download">downloading</string>
     <string name="app_introduction">function introduction</string>

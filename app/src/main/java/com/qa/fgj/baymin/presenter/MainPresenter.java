@@ -4,8 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.telephony.PhoneStateListener;
-import android.telephony.TelephonyManager;
 
 import com.baidu.speech.EventListener;
 import com.baidu.speech.EventManager;
@@ -14,14 +12,17 @@ import com.qa.fgj.baymin.R;
 import com.qa.fgj.baymin.app.Constant;
 import com.qa.fgj.baymin.base.IBasePresenter;
 import com.qa.fgj.baymin.model.MainModel;
+import com.qa.fgj.baymin.model.UpdateModel;
+import com.qa.fgj.baymin.model.entity.AppUpdateInfo;
 import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.ui.view.IMainView;
 import com.qa.fgj.baymin.util.Global;
 import com.qa.fgj.baymin.util.LogUtil;
 import com.qa.fgj.baymin.util.MusicManager;
+import com.qa.fgj.baymin.util.SystemUtil;
 import com.qa.fgj.baymin.util.TTSManager;
-import com.qa.fgj.baymin.util.ToastUtil;
+import com.qa.fgj.baymin.widget.LoadingDialog;
 
 import org.json.JSONObject;
 
@@ -189,7 +190,7 @@ public class MainPresenter<T extends IMainView> implements IBasePresenter<T> {
                 mWpEventManager.send("wp.start", new JSONObject(params).toString(), null, 0, 0);
             } catch (Exception e) {
                 LogUtil.e("---启动语音唤醒失败： " + e.toString());
-                ToastUtil.shortShow("---启动语音唤醒失败： " + e.toString());
+                view.showError("---启动语音唤醒失败： " + e.toString());
             }
     }
 

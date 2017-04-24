@@ -34,6 +34,7 @@ import com.qa.fgj.baymin.model.entity.BayMinResponse;
 import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.presenter.MainPresenter;
+import com.qa.fgj.baymin.ui.service.AppUpdateManager;
 import com.qa.fgj.baymin.ui.view.IMainView;
 import com.qa.fgj.baymin.ui.adapter.MsgAdapter;
 import com.qa.fgj.baymin.util.Global;
@@ -101,6 +102,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
     //存储当前系统语言
     String currentLanguage = "";
     private long exitTime = 0;
+    private AppUpdateManager updateManager;
 
     private TextWatcher mTextWatcher = new TextWatcher() {
         @Override
@@ -336,14 +338,15 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                 AdviseQAActivity.start(this);
                 break;
             case R.id.setBackground:
+                // TODO: 主题更换
                 ToastUtil.shortShow("待完善");
                 break;
             case R.id.introduction:
                 IntroductionActivity.start(this);
                 break;
             case R.id.checkVersion:
-                // TODO: 版本更新
-                ToastUtil.shortShow("待完善");
+                updateManager = new AppUpdateManager(MainActivity.this);
+                updateManager.onCreate();
                 break;
             case R.id.setLanguage:
                 showLangSettingDialog();
@@ -746,6 +749,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
         destroyDialog(exitDialog);
         if (asrDialog != null){
             asrDialog.onDestroy();
+        }
+        if (updateManager != null){
+            updateManager.onDestroy();
         }
         presenter.detachView();
         presenter.onDestroy();

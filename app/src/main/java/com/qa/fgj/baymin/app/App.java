@@ -31,7 +31,7 @@ import retrofit2.http.Field;
 public class App extends Application {
 
     private static App instance;
-    private static AppComponent appComponent;
+//    private static AppComponent appComponent;
     private Set<Activity> allActivities;
 
     public static int SCREEN_WIDTH = -1;
@@ -50,10 +50,10 @@ public class App extends Application {
         return instance;
     }
 
-    static {
-        AppCompatDelegate.setDefaultNightMode(
-                AppCompatDelegate.MODE_NIGHT_AUTO);
-    }
+//    static {
+//        AppCompatDelegate.setDefaultNightMode(
+//                AppCompatDelegate.MODE_NIGHT_AUTO);
+//    }
 
     @Override
     public void onCreate() {
@@ -163,12 +163,12 @@ public class App extends Application {
         }
     }
 
-    public static AppComponent getAppComponent(){
-        if (appComponent == null){
-            appComponent = DaggerAppComponent.builder()
-                    .appModule(new AppModule(instance)).build();
-        }
-        return appComponent;
-    }
+//    public static AppComponent getAppComponent(){
+//        if (appComponent == null){
+//            appComponent = DaggerAppComponent.builder()
+//                    .appModule(new AppModule(instance)).build();
+//        }
+//        return appComponent;
+//    }
 
 }

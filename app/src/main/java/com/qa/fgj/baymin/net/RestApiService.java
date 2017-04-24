@@ -18,9 +18,6 @@ public final class RestApiService {
         if (instance == null) {
             instance = new RestApiService(context.getApplicationContext());
         }
-        if (instance != null){
-            Log.d("RestApiService", "--------------not null");
-        }
         return instance;
     }
 

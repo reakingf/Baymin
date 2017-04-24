@@ -25,7 +25,8 @@
     <string name="close">关闭</string>
     <string name="startup">启动</string>
     <string name="new_version">检查到新版本:&#160; </string>
-    <string name="update">更新</string>
+    <string name="update_now">立即更新</string>
+    <string name="update_next_time">下次再说</string>
     <string name="version_updating">版本更新中</string>
     <string name="being_download">正在下载中</string>
     <string name="app_introduction">功能介绍</string>

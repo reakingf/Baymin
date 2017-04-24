@@ -20,7 +20,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class BayMinHttpClientRx {
 
     private final Retrofit retrofit;
-    private final static String BASE_URL = "http://192.168.235.19:8080/";//特意留空
+    private final static String BASE_URL = "http://202.116.195.64:8080/";//特意留空
 
     public BayMinHttpClientRx(final long connTimeout, final long readTimeout, final long writeTimeout){
 

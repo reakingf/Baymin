@@ -4,6 +4,8 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -161,6 +163,24 @@ public class SystemUtil {
             }
         }
         return null;
+    }
+
+    /**
+     * 获取当前版本号
+     */
+    public static String getCurrentVersion(Context context) {
+        String versionName = null;
+        PackageManager packageManager = context.getPackageManager();
+        PackageInfo packageInfo = null;
+        try {
+            packageInfo = packageManager.getPackageInfo(context.getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        if (packageInfo != null && packageInfo.versionName != null){
+            versionName = packageInfo.versionName;
+        }
+        return versionName;
     }
 
 }
