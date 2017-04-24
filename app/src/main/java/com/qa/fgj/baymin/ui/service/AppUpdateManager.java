@@ -162,8 +162,6 @@ public class AppUpdateManager {
 
                     @Override
                     public void onError(Throwable e) {
-                        LogUtil.d("----------" + e.getMessage());
-                        e.printStackTrace();
                         if (downloadDialog != null && downloadDialog.isShowing()){
                             downloadDialog.dismiss();
                         }
@@ -172,7 +170,8 @@ public class AppUpdateManager {
 
                     @Override
                     public void onNext(ResponseBody responseBody) {
-                        totalLength = responseBody.contentLength();
+                        // TODO: 2017/4/24 待处理
+                        totalLength = 14552499;
                         saveApk(responseBody, appUpdateInfo);
                     }
                 });
@@ -247,7 +246,6 @@ public class AppUpdateManager {
             LogUtil.d(e.getMessage());
         }
         downloadDialog.dismiss();
-        LogUtil.d("---" + apkPath);
         return apkPath;
     }
 
