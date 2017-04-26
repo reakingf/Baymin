@@ -17,7 +17,7 @@ import com.qa.fgj.baymin.model.entity.MessageBean;
 import com.qa.fgj.baymin.model.entity.UserBean;
 import com.qa.fgj.baymin.ui.activity.MainActivity;
 import com.qa.fgj.baymin.util.PhotoUtils;
-import com.qa.fgj.baymin.util.ToastUtil;
+import com.qa.fgj.baymin.util.SystemUtil;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ import java.util.List;
  */
 
 public class MsgAdapter extends ArrayAdapter<MessageBean>
-        implements View.OnClickListener{
+        implements View.OnClickListener, View.OnLongClickListener{
 
     private MainActivity mainActivity;
     private UserBean userBean;
@@ -60,7 +60,8 @@ public class MsgAdapter extends ArrayAdapter<MessageBean>
 //            viewHolder.sendState.setOnClickListener(this);
             viewHolder.userFace.setOnClickListener(this);
 
-//            viewHolder.sendText.setOnLongClickListener(this);
+            viewHolder.sendText.setOnLongClickListener(this);
+            viewHolder.receivedText.setOnLongClickListener(this);
 
             view.setTag(viewHolder);
         } else {
@@ -84,19 +85,19 @@ public class MsgAdapter extends ArrayAdapter<MessageBean>
         }
     }
 
-//    @Override
-//    public boolean onLongClick(View view) {
-//        //TODO PopupWindow：复制、删除、查看更多等
-//        switch (view.getId()){
-//            case R.id.recevied_text:
-//                ToastUtil.show("长按接收文本");
-//                break;
-//            case R.id.send_text:
-//                ToastUtil.show("长按发送文本");
-//            break;
-//        }
-//        return false;
-//    }
+    @Override
+    public boolean onLongClick(View view) {
+        //TODO PopupWindow：复制、删除、查看更多等
+        switch (view.getId()){
+            case R.id.recevied_text:
+                SystemUtil.copyToClipBoard(getContext(), ((TextView)view).getText().toString());
+                break;
+            case R.id.send_text:
+                SystemUtil.copyToClipBoard(getContext(), ((TextView)view).getText().toString());
+            break;
+        }
+        return false;
+    }
 
     private void bindData(MessageBean messageBean) {
         if (messageBean == null){
