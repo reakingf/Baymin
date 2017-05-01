@@ -593,7 +593,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainVi
                     if (beans == null || beans.size() < 20){
                         listView.setPullRefreshEnable(false);
                     }
-                    listView.stopRefresh();
+                    //todo 调用stopRefresh会出错，停止后无法定位到第一条消息
+//                    listView.stopRefresh();
                     mPullRefreshing = false;
                     adapter.notifyDataSetChanged();
                     listView.setSelection(0);
